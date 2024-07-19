@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_8b1f1957a11fcbee\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_4e5cd0d2976235cb\CortexPE\Commando\PacketHooker;
 use hazardteam\lottery\commands\LotteryCommand;
-use hazardteam\lottery\libs\_8b1f1957a11fcbee\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_4e5cd0d2976235cb\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\PluginBase;
 
 class Main extends PluginBase {
