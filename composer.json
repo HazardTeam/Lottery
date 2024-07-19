@@ -1,0 +1,22 @@
+{
+    "name": "hazardteam/lottery",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "dapigguy/libpiggyeconomy": "dev-master",
+        "pocketmine/pocketmine-mp": "^5.3",
+        "paroxity/commando": "^3.2",
+        "latampmdevs/formapi": "dev-master",
+        "muqsit/invmenu": "^4.6"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/LatamPMDevs/FormAPI.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/DaPigGuy/libPiggyEconomy.git"
+        }
+    ]
+}

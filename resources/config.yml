@@ -1,0 +1,30 @@
+min-bet: 1000
+
+range:
+  -2.0=0.0: 70
+  0.0=2.0: 40
+
+messages:
+  invalid-bet: "§a| §7Taruhan kamu harus berupa angka."
+  receive-price: "§a| §7Kamu menang. Profit §r §a{price}"
+  receive-less-price: "§a| §7Kamu kalah. Rugi §r §a{price}. §7Masih lebih baik daripada banyak kerugian"
+  loss-price: "§a| §7Kamu kalah. Rugi §r §a{price}"
+  no-enough-money: "§a| §7Uang kamu tidak cukup untuk bertaruh."
+  less-that-min-bet: "§a| §7Taruhan kamu terlalu kecil."
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fbertaruh sebanyak §a{bet}. §fMenang/Kalah §e{loss}. §fTotal didapat §6{price}"
+
+forms:
+  play:
+    title: "§7-= §eLOTTERY §7=-"
+    content: "§6» §fSaldo kamu: §r §a{money}"
+
+gui:
+  lottery:
+    title: "§7-= §eLOTTERY GACOR §7=-"
+    items:
+      reveal: "§aPreview Hasil"
+      bet-info: "§eTaruhan kamu: §r §a{bet}"
+  reveal:
+    title: "§7-= §eHASIL §7=-"
+    items:
+      reveal-result: "§aPindahkan ini untuk melihat Hasil"

@@ -1,0 +1,14 @@
+---
+name: Lottery
+version: 1.0.0
+main: hazardteam\lottery\Main
+api: 5.3.0
+author: HazardTeam
+permissions:
+  lottery.command:
+    default: true
+  lottery.play:
+    default: true
+  lottery.reload:
+    default: op
+...
