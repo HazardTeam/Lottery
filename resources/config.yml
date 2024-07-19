@@ -1,17 +1,17 @@
 min-bet: 1000
 
 range:
-  -2.0=0.0: 70
-  0.0=2.0: 40
+  -2.00=0.00: 70
+  0.00=2.00: 40
 
 messages:
   invalid-bet: "§e| §7Your bet must be a number."
-  receive-price: "§e| §aYou won. Profit §b §a{price}"
-  receive-less-price: "§e| §cYou lost. Loss §b §c{price}. §7Still better than a bigger loss."
-  loss-price: "§e| §cYou lost. Loss §b §c{price}"
+  receive-prize: "§e| §aYou won. Profit §b §a{prize}"
+  receive-less-prize: "§e| §cYou lost. Loss §b §c{prize}. §7Still better than a bigger loss."
+  loss-prize: "§e| §cYou lost. Loss §b §c{prize}"
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
-  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{price}"
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize}"
 
 forms:
   play:

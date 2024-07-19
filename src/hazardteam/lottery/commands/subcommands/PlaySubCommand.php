@@ -30,6 +30,7 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\PopSound;
@@ -45,8 +46,25 @@ use function max;
 use function str_replace;
 
 class PlaySubCommand extends BaseSubCommand {
-	private array $offset = [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43];
+	private array $innerSlot = [];
 	private array $chosen = [];
+
+	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
+		parent::__construct($plugin, $name, $description, $aliases);
+
+		$this->initOffets();
+	}
+
+	private function initOffets() : void {
+		$rows = 6;
+		$cols = 9;
+
+		for ($row = 1; $row < $rows - 1; $row++) {
+			for ($col = 1; $col < $cols - 1; $col++) {
+				$this->innerSlot[] = $row * $cols + $col;
+			}
+		}
+	}
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (!$sender instanceof Player) {
@@ -98,7 +116,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$contents = [];
 
 		for ($i = 0; $i <= 53; ++$i) {
-			if (in_array($i, $this->offset, true)) {
+			if (in_array($i, $this->innerSlot, true)) {
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)])->asItem();
 			} elseif ($i === 48) {
 				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getConfig()->getNested('gui.lottery.items.bet-info')));
@@ -120,8 +138,8 @@ class PlaySubCommand extends BaseSubCommand {
 				$this->chosen[$playerName] = [];
 			}
 
-			if (in_array($slot, $this->offset, true) && count($this->chosen[$playerName]) < 5) {
-				$this->chosen[$playerName][] = array_search($slot, $this->offset, true);
+			if (in_array($slot, $this->innerSlot, true) && count($this->chosen[$playerName]) < 5) {
+				$this->chosen[$playerName][] = array_search($slot, $this->innerSlot, true);
 				$menu->getInventory()->setItem($slot, VanillaBlocks::STONE()->asItem());
 				$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new PopSound());
 			}
@@ -151,9 +169,9 @@ class PlaySubCommand extends BaseSubCommand {
 		$chosen = [];
 
 		$count = 10;
-		foreach ($this->chosen[$player->getName()] as $key => $offset) {
+		foreach ($this->chosen[$player->getName()] as $key => $innerSlot) {
 			$contents[$count] = VanillaBlocks::STONE()->asItem()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
-			$chosen[$key] = (float) $table[$offset];
+			$chosen[$key] = (float) $table[$innerSlot];
 			++$count;
 		}
 
@@ -201,14 +219,14 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setInventoryCloseListener(function (Player $player, Inventory $inventory) use ($bet, $prize) : void {
 			unset($this->chosen[$player->getName()]);
 			$total = $prize - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{price}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getConfig()->getNested('messages.broadcast-message')));
+			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getConfig()->getNested('messages.broadcast-message')));
 
 			if ($prize > $bet) {
-				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-prize')));
 			} elseif ($total > -$bet && $total < $bet) {
-				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-less-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-less-prize')));
 			} else {
-				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.loss-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.loss-prize')));
 			}
 		});
 

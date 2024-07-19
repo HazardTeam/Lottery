@@ -32,7 +32,7 @@ class LotteryManager {
 		$range = $config->get('range');
 		foreach ($range as $key => $value) {
 			$ranges = explode('=', $key);
-			$this->ranges[] = new LotteryRange((float) $ranges[0], (float) $ranges[1], (int) $value);
+			$this->ranges[] = new LotteryRange((string) $ranges[0], (string) $ranges[1], (int) $value);
 		}
 	}
 
