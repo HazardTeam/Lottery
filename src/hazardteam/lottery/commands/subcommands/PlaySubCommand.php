@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_998d1f79d7805887\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_998d1f79d7805887\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_63cdd9d5b0576348\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_63cdd9d5b0576348\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_998d1f79d7805887\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_998d1f79d7805887\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_998d1f79d7805887\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_63cdd9d5b0576348\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_63cdd9d5b0576348\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_63cdd9d5b0576348\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
@@ -117,13 +117,15 @@ class PlaySubCommand extends BaseSubCommand {
 
 		for ($i = 0; $i <= 53; ++$i) {
 			if (in_array($i, $this->innerSlot, true)) {
-				$contents[$i] = VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)])->asItem();
+				$color = $colors[array_rand($colors)];
+				$contents[$i] = VanillaBlocks::WOOL()->setColor($color)->asItem();
+				$this->innerSlot[$i] = $color;
 			} elseif ($i === 48) {
 				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getConfig()->getNested('gui.lottery.items.bet-info', '§eYour Bet: §b §a{bet}')));
 			} elseif ($i === 50) {
 				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal', '§aPreview Result'));
 			} else {
-				$contents[$i] = VanillaBlocks::IRON_BARS()->asItem();
+				$contents[$i] = VanillaBlocks::TWISTING_VINES()->asItem();
 			}
 		}
 
@@ -133,15 +135,25 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table) : void {
 			$slot = $transaction->getAction()->getSlot();
 			$playerName = $transaction->getPlayer()->getName();
+			$inventory = $menu->getInventory();
 
 			if (!isset($this->chosen[$playerName])) {
 				$this->chosen[$playerName] = [];
 			}
 
 			if (in_array($slot, $this->innerSlot, true) && count($this->chosen[$playerName]) < 5) {
+				$color = $this->innerSlot[$slot];
 				$this->chosen[$playerName][] = array_search($slot, $this->innerSlot, true);
-				$menu->getInventory()->setItem($slot, VanillaBlocks::STONE()->asItem());
+				$menu->getInventory()->setItem($slot, VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem());
 				$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new PopSound());
+
+				if (count($this->chosen[$playerName]) === 5) {
+					foreach ($inventory->getContents() as $inventorySlot => $item) {
+						if ($item->getTypeId() === VanillaBlocks::TWISTING_VINES()->asItem()->getTypeId()) {
+							$inventory->setItem($inventorySlot, VanillaBlocks::WEEPING_VINES()->asItem());
+						}
+					}
+				}
 			}
 
 			if ($slot === 50) {
@@ -162,7 +174,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 		for ($i = 0; $i <= 26; ++$i) {
 			if ($i < 10 || $i > 16 || $i === 15) {
-				$contents[$i] = VanillaBlocks::IRON_BARS()->asItem();
+				$contents[$i] = VanillaBlocks::TWISTING_VINES()->asItem();
 			}
 		}
 
@@ -170,7 +182,8 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$count = 10;
 		foreach ($this->chosen[$player->getName()] as $key => $innerSlot) {
-			$contents[$count] = VanillaBlocks::STONE()->asItem()->setCustomName((string) Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
+			$color = $this->innerSlot[$innerSlot];
+			$contents[$count] = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
 			$chosen[$key] = (float) $table[$innerSlot];
 			++$count;
 		}
@@ -192,7 +205,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $chosen) : void {
 			$player = $transaction->getPlayer();
 			$slot = $transaction->getAction()->getSlot();
-			$typeId = VanillaBlocks::STONE()->asItem()->getTypeId();
+			$typeId = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($this->innerSlot[$slot - 10])->asItem()->getTypeId();
 
 			if ($slot >= 10 && $slot <= (count($chosen) + 9) && $menu->getInventory()->getItem($slot)->getTypeId() === $typeId) {
 				$mult = $chosen[$slot - 10];
