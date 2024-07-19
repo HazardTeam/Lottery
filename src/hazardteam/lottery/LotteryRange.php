@@ -17,16 +17,16 @@ use function mt_rand;
 
 class LotteryRange {
 	public function __construct(
-		private float|int $startRange,
-		private float|int $endRange,
+		private string $startRange,
+		private string $endRange,
 		private int $chance
 	) {}
 
-	public function getStartRange() : float|int {
+	public function getStartRange() : string {
 		return $this->startRange;
 	}
 
-	public function getEndRange() : float|int {
+	public function getEndRange() : string {
 		return $this->endRange;
 	}
 
@@ -36,8 +36,18 @@ class LotteryRange {
 
 	public function getTable() : array {
 		$table = [];
+		$startRange = \explode('.', $this->startRange);
+		$endRange = \explode('.', $this->endRange);
+
+		$afterComma = 0;
+		if(\count($startRange) == 2 && \count($endRange) == 2) {
+			$afterComma =  max(\strlen($startRange[1]), \strlen($endRange[1]));
+		}
+
+		$afterComma = 10 ** $afterComma;
+
 		for ($i = 1; $i <= $this->chance; ++$i) {
-			$table[] = mt_rand($this->startRange * 100, $this->endRange * 100) / 100;
+			$table[] = mt_rand(\intval($this->startRange * $afterComma), \intval($this->endRange * $afterComma)) / $afterComma;
 		}
 
 		return $table;
