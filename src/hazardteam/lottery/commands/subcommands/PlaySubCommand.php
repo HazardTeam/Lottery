@@ -59,8 +59,8 @@ class PlaySubCommand extends BaseSubCommand {
 		$rows = 6;
 		$cols = 9;
 
-		for ($row = 1; $row < $rows - 1; $row++) {
-			for ($col = 1; $col < $cols - 1; $col++) {
+		for ($row = 1; $row < $rows - 1; ++$row) {
+			for ($col = 1; $col < $cols - 1; ++$col) {
 				$this->innerSlot[] = $row * $cols + $col;
 			}
 		}
