@@ -126,7 +126,9 @@ class PlaySubCommand extends BaseSubCommand {
 			} elseif ($i === 50) {
 				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal', '§aPreview Result'));
 			} else {
-				if(!isset($contents[$i])) $contents[$i] = VanillaBlocks::VINES()->asItem();
+				if (!isset($contents[$i])) {
+					$contents[$i] = VanillaBlocks::VINES()->asItem();
+				}
 			}
 		}
 
