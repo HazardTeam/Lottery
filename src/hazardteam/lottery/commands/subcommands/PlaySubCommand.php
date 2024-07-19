@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_d1290aa2f9124f2a\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_d1290aa2f9124f2a\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_61b4ca28e549e95d\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_61b4ca28e549e95d\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_d1290aa2f9124f2a\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_d1290aa2f9124f2a\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_d1290aa2f9124f2a\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_61b4ca28e549e95d\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_61b4ca28e549e95d\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_61b4ca28e549e95d\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
@@ -52,10 +52,10 @@ class PlaySubCommand extends BaseSubCommand {
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
 		parent::__construct($plugin, $name, $description, $aliases);
 
-		$this->initOffets();
+		$this->initOffsets();
 	}
 
-	private function initOffets() : void {
+	private function initOffsets() : void {
 		$rows = 6;
 		$cols = 9;
 
