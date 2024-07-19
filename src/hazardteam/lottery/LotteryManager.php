@@ -36,7 +36,7 @@ class LotteryManager {
 		}
 	}
 
-	public function getTables($tables = []) {
+	public function getTables(array $tables = []) : array {
 		foreach ($this->ranges as $range) {
 			$tables = array_merge($tables, $range->getTable());
 		}

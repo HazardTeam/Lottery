@@ -34,7 +34,7 @@ class LotteryRange {
 		return $this->chance;
 	}
 
-	public function getTable() {
+	public function getTable() : array {
 		$table = [];
 		for ($i = 1; $i <= $this->chance; ++$i) {
 			$table[] = mt_rand($this->startRange * 100, $this->endRange * 100) / 100;
