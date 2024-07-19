@@ -52,10 +52,10 @@ class PlaySubCommand extends BaseSubCommand {
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
 		parent::__construct($plugin, $name, $description, $aliases);
 
-		$this->initOffets();
+		$this->initOffsets();
 	}
 
-	private function initOffets() : void {
+	private function initOffsets() : void {
 		$rows = 6;
 		$cols = 9;
 
