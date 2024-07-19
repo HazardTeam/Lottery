@@ -5,26 +5,26 @@ range:
   0.0=2.0: 40
 
 messages:
-  invalid-bet: "§a| §7Taruhan kamu harus berupa angka."
-  receive-price: "§a| §7Kamu menang. Profit §r §a{price}"
-  receive-less-price: "§a| §7Kamu kalah. Rugi §r §a{price}. §7Masih lebih baik daripada banyak kerugian"
-  loss-price: "§a| §7Kamu kalah. Rugi §r §a{price}"
-  no-enough-money: "§a| §7Uang kamu tidak cukup untuk bertaruh."
-  less-that-min-bet: "§a| §7Taruhan kamu terlalu kecil."
-  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fbertaruh sebanyak §a{bet}. §fMenang/Kalah §e{loss}. §fTotal didapat §6{price}"
+  invalid-bet: "§e| §7Your bet must be a number."
+  receive-price: "§e| §aYou won. Profit §b §a{price}"
+  receive-less-price: "§e| §cYou lost. Loss §b §c{price}. §7Still better than a bigger loss."
+  loss-price: "§e| §cYou lost. Loss §b §c{price}"
+  no-enough-money: "§e| §7You do not have enough money to place a bet."
+  less-than-min-bet: "§e| §7Your bet is too small."
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{price}"
 
 forms:
   play:
     title: "§7-= §eLOTTERY §7=-"
-    content: "§6» §fSaldo kamu: §r §a{money}"
+    content: "§6» §fYour balance: §b §a{money}"
 
 gui:
   lottery:
-    title: "§7-= §eLOTTERY GACOR §7=-"
+    title: "§7-= §eLOTTERY JACKPOT §7=-"
     items:
-      reveal: "§aPreview Hasil"
-      bet-info: "§eTaruhan kamu: §r §a{bet}"
+      reveal: "§aPreview Result"
+      bet-info: "§eYour Bet: §b §a{bet}"
   reveal:
-    title: "§7-= §eHASIL §7=-"
+    title: "§7-= §eRESULTS §7=-"
     items:
-      reveal-result: "§aPindahkan ini untuk melihat Hasil"
+      reveal-result: "§aMove this to see the Result"
