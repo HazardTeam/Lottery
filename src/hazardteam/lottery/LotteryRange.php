@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
+use function count;
+use function explode;
+use function max;
 use function mt_rand;
+use function strlen;
 
 class LotteryRange {
 	public function __construct(
@@ -36,18 +40,18 @@ class LotteryRange {
 
 	public function getTable() : array {
 		$table = [];
-		$startRange = \explode('.', $this->startRange);
-		$endRange = \explode('.', $this->endRange);
+		$startRange = explode('.', $this->startRange);
+		$endRange = explode('.', $this->endRange);
 
 		$afterComma = 0;
-		if(\count($startRange) == 2 && \count($endRange) == 2) {
-			$afterComma =  max(\strlen($startRange[1]), \strlen($endRange[1]));
+		if (count($startRange) === 2 && count($endRange) === 2) {
+			$afterComma = max(strlen($startRange[1]), strlen($endRange[1]));
 		}
 
 		$afterComma = 10 ** $afterComma;
 
 		for ($i = 1; $i <= $this->chance; ++$i) {
-			$table[] = mt_rand(\intval($this->startRange * $afterComma), \intval($this->endRange * $afterComma)) / $afterComma;
+			$table[] = mt_rand((int) ((float) $this->startRange * $afterComma), (int) ((float) $this->endRange * $afterComma)) / $afterComma;
 		}
 
 		return $table;

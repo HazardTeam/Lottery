@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_21a1ef339905aa20\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_21a1ef339905aa20\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_50594e752a3c46e7\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_50594e752a3c46e7\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_21a1ef339905aa20\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_21a1ef339905aa20\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_21a1ef339905aa20\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_50594e752a3c46e7\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_50594e752a3c46e7\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_50594e752a3c46e7\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
@@ -59,8 +59,8 @@ class PlaySubCommand extends BaseSubCommand {
 		$rows = 6;
 		$cols = 9;
 
-		for ($row = 1; $row < $rows - 1; $row++) {
-			for ($col = 1; $col < $cols - 1; $col++) {
+		for ($row = 1; $row < $rows - 1; ++$row) {
+			for ($col = 1; $col < $cols - 1; ++$col) {
 				$this->innerSlot[] = $row * $cols + $col;
 			}
 		}
@@ -86,7 +86,7 @@ class PlaySubCommand extends BaseSubCommand {
 			}
 
 			$bet = (int) $data['bet'];
-			$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet');
+			$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet', 1000);
 
 			if ($bet < $minBet) {
 				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-than-min-bet'));
@@ -106,7 +106,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$form->setTitle(Main::getInstance()->getConfig()->getNested('forms.play.title'));
 		$form->addLabel(str_replace('{money}', (string) EconomyAPI::getInstance()->myMoney($player), Main::getInstance()->getConfig()->getNested('forms.play.content')));
-		$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet')), label: 'bet');
+		$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet', 1000)), label: 'bet');
 		$player->sendForm($form);
 	}
 
@@ -119,16 +119,16 @@ class PlaySubCommand extends BaseSubCommand {
 			if (in_array($i, $this->innerSlot, true)) {
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)])->asItem();
 			} elseif ($i === 48) {
-				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getConfig()->getNested('gui.lottery.items.bet-info')));
+				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getConfig()->getNested('gui.lottery.items.bet-info', '§eYour Bet: §b §a{bet}')));
 			} elseif ($i === 50) {
-				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal'));
+				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal', '§aPreview Result'));
 			} else {
 				$contents[$i] = VanillaBlocks::IRON_BARS()->asItem();
 			}
 		}
 
 		$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-		$menu->setName(Main::getInstance()->getConfig()->getNested('gui.lottery.title'));
+		$menu->setName((string) Main::getInstance()->getConfig()->getNested('gui.lottery.title', ''));
 		$menu->getInventory()->setContents($contents);
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table) : void {
 			$slot = $transaction->getAction()->getSlot();
@@ -157,7 +157,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 	private function revealPrize(Player $player, int $bet, array $table) : void {
 		$menu = InvMenu::create(InvMenu::TYPE_CHEST);
-		$menu->setName(Main::getInstance()->getConfig()->getNested('gui.reveal.title'));
+		$menu->setName((string) Main::getInstance()->getConfig()->getNested('gui.reveal.title'));
 		$contents = [];
 
 		for ($i = 0; $i <= 26; ++$i) {
@@ -170,7 +170,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$count = 10;
 		foreach ($this->chosen[$player->getName()] as $key => $innerSlot) {
-			$contents[$count] = VanillaBlocks::STONE()->asItem()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
+			$contents[$count] = VanillaBlocks::STONE()->asItem()->setCustomName((string) Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
 			$chosen[$key] = (float) $table[$innerSlot];
 			++$count;
 		}
