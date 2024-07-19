@@ -17,18 +17,18 @@ use CortexPE\Commando\PacketHooker;
 use hazardteam\lottery\commands\LotteryCommand;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 
 class Main extends PluginBase {
-	private static $instance;
+	use SingletonTrait;
+
 	private LotteryManager $lottmanager;
 
-	public static function getInstance() : self {
-		return self::$instance;
-	}
-
 	public function onEnable() : void {
-		self::$instance = $this;
+		self::setInstance($this);
+
 		$this->saveDefaultConfig();
+
 		if (!InvMenuHandler::isRegistered()) {
 			InvMenuHandler::register($this);
 		}
