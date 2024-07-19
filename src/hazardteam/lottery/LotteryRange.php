@@ -51,7 +51,7 @@ class LotteryRange {
 		$afterComma = 10 ** $afterComma;
 
 		for ($i = 1; $i <= $this->chance; ++$i) {
-			$table[] = mt_rand((int) ($this->startRange * $afterComma), (int) ($this->endRange * $afterComma)) / $afterComma;
+			$table[] = mt_rand((int) ((float) $this->startRange * $afterComma), (int) ((float) $this->endRange * $afterComma)) / $afterComma;
 		}
 
 		return $table;
