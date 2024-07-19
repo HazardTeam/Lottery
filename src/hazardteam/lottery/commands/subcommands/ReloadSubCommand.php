@@ -13,17 +13,15 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_b8822f941066875f\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_ce2936f1843d43af\CortexPE\Commando\BaseSubCommand;
 use hazardteam\lottery\Main;
+use pocketmine\command\CommandSender;
 
 class ReloadSubCommand extends BaseSubCommand {
-	public function onRun(\pocketmine\command\CommandSender $sender, string $aliasUsed, array $args) : void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		Main::getInstance()->reload();
 	}
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered.
-	 */
 	protected function prepare() : void {
 		$this->setPermission('lottery.reload');
 	}

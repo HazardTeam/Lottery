@@ -13,23 +13,21 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands;
 
-use hazardteam\lottery\libs\_b8822f941066875f\CortexPE\Commando\BaseCommand;
+use hazardteam\lottery\libs\_ce2936f1843d43af\CortexPE\Commando\BaseCommand;
 use hazardteam\lottery\commands\subcommands\PlaySubCommand;
 use hazardteam\lottery\commands\subcommands\ReloadSubCommand;
 use hazardteam\lottery\Main;
+use pocketmine\command\CommandSender;
 use function assert;
 use function count;
 
 class LotteryCommand extends BaseCommand {
-	public function onRun(\pocketmine\command\CommandSender $sender, string $aliasUsed, array $args) : void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (count($args) === 0) {
 			$sender->sendMessage('Usage: /lottery <play>');
 		}
 	}
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered.
-	 */
 	protected function prepare() : void {
 		$this->setPermission('lottery.command');
 		$plugin = $this->getOwningPlugin();

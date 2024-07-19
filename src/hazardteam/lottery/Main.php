@@ -13,22 +13,22 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_b8822f941066875f\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_ce2936f1843d43af\CortexPE\Commando\PacketHooker;
 use hazardteam\lottery\commands\LotteryCommand;
-use hazardteam\lottery\libs\_b8822f941066875f\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_ce2936f1843d43af\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 
 class Main extends PluginBase {
-	private static $instance;
+	use SingletonTrait;
+
 	private LotteryManager $lottmanager;
 
-	public static function getInstance() : self {
-		return self::$instance;
-	}
-
 	public function onEnable() : void {
-		self::$instance = $this;
+		self::setInstance($this);
+
 		$this->saveDefaultConfig();
+
 		if (!InvMenuHandler::isRegistered()) {
 			InvMenuHandler::register($this);
 		}

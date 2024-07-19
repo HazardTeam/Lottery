@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_b8822f941066875f\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_ce2936f1843d43af\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_ce2936f1843d43af\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_b8822f941066875f\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_b8822f941066875f\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_b8822f941066875f\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_ce2936f1843d43af\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_ce2936f1843d43af\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_ce2936f1843d43af\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\command\CommandSender;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
@@ -28,6 +30,7 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\PopSound;
 use pocketmine\world\sound\XpCollectSound;
@@ -42,19 +45,18 @@ use function max;
 use function str_replace;
 
 class PlaySubCommand extends BaseSubCommand {
-	private $offset = [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43];
-	private $chosen = [];
+	private array $offset = [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43];
+	private array $chosen = [];
 
-	public function onRun(\pocketmine\command\CommandSender $sender, string $aliasUsed, array $args) : void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (!$sender instanceof Player) {
-			$sender->sendMessage('Please use this ingames');
-			return;
+			throw new AssumptionFailedError(InGameRequiredConstraint::class . ' should have prevented this');
 		}
 
-		$this->PlayMenu($sender);
+		$this->showPlayMenu($sender);
 	}
 
-	public function PlayMenu(Player $player) : void {
+	private function showPlayMenu(Player $player) : void {
 		$form = new CustomForm(function (Player $player, $data = null) : void {
 			if ($data === null) {
 				return;
@@ -65,32 +67,36 @@ class PlaySubCommand extends BaseSubCommand {
 				return;
 			}
 
-			if ((int) $data['bet'] < (int) Main::getInstance()->getConfig()->getNested('min-bet')) {
-				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-that-min-bet'));
+			$bet = (int) $data['bet'];
+			$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet');
+
+			if ($bet < $minBet) {
+				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-than-min-bet'));
 				return;
 			}
 
-			if (EconomyAPI::getInstance()->myMoney($player) < (int) $data['bet']) {
-				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.no-enough-money'));
+			if (EconomyAPI::getInstance()->myMoney($player) < $bet) {
+				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.not-enough-money'));
 				return;
 			}
 
-			EconomyAPI::getInstance()->reduceMoney($player, (int) $data['bet'], true, 'Lottery');
+			EconomyAPI::getInstance()->reduceMoney($player, $bet, true, 'Lottery');
 			$pk = PlaySoundPacket::create('ambient.cave', $player->getPosition()->getX(), $player->getPosition()->getY(), $player->getPosition()->getZ(), 185.0, 1);
 			$player->getNetworkSession()->sendDataPacket($pk, true);
-			$this->LotteryMenu($player, (int) $data['bet']);
+			$this->showLotteryMenu($player, $bet);
 		});
 
 		$form->setTitle(Main::getInstance()->getConfig()->getNested('forms.play.title'));
 		$form->addLabel(str_replace('{money}', (string) EconomyAPI::getInstance()->myMoney($player), Main::getInstance()->getConfig()->getNested('forms.play.content')));
-		$form->addInput('§6» §fPasang Taruhanmu:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet')), label: 'bet');
+		$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet')), label: 'bet');
 		$player->sendForm($form);
 	}
 
-	public function LotteryMenu(Player $player, int $bet) : void {
+	private function showLotteryMenu(Player $player, int $bet) : void {
 		$table = Main::getInstance()->getLotteryManager()->getTables();
 		$colors = [DyeColor::RED(), DyeColor::GREEN(), DyeColor::CYAN(), DyeColor::ORANGE(), DyeColor::LIGHT_BLUE(), DyeColor::LIME()];
 		$contents = [];
+
 		for ($i = 0; $i <= 53; ++$i) {
 			if (in_array($i, $this->offset, true)) {
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)])->asItem();
@@ -108,20 +114,21 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->getInventory()->setContents($contents);
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table) : void {
 			$slot = $transaction->getAction()->getSlot();
+			$playerName = $transaction->getPlayer()->getName();
 
-			if (!isset($this->chosen[$transaction->getPlayer()->getName()])) {
-				$this->chosen[$transaction->getPlayer()->getName()] = [];
+			if (!isset($this->chosen[$playerName])) {
+				$this->chosen[$playerName] = [];
 			}
 
-			if (in_array($slot, $this->offset, true) && count($this->chosen[$transaction->getPlayer()->getName()]) < 5) {
-				$this->chosen[$transaction->getPlayer()->getName()][] = array_search($slot, $this->offset, true);
+			if (in_array($slot, $this->offset, true) && count($this->chosen[$playerName]) < 5) {
+				$this->chosen[$playerName][] = array_search($slot, $this->offset, true);
 				$menu->getInventory()->setItem($slot, VanillaBlocks::STONE()->asItem());
 				$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new PopSound());
 			}
 
 			if ($slot === 50) {
-				if (count($this->chosen[$transaction->getPlayer()->getName()]) > 0) {
-					$this->RevealPrice($transaction->getPlayer(), $bet, $table);
+				if (count($this->chosen[$playerName]) > 0) {
+					$this->revealPrize($transaction->getPlayer(), $bet, $table);
 					$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new XpCollectSound());
 				}
 			}
@@ -130,10 +137,11 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->send($player);
 	}
 
-	public function RevealPrice(Player $player, int $bet, array $table) : void {
+	private function revealPrize(Player $player, int $bet, array $table) : void {
 		$menu = InvMenu::create(InvMenu::TYPE_CHEST);
 		$menu->setName(Main::getInstance()->getConfig()->getNested('gui.reveal.title'));
 		$contents = [];
+
 		for ($i = 0; $i <= 26; ++$i) {
 			if ($i < 10 || $i > 16 || $i === 15) {
 				$contents[$i] = VanillaBlocks::IRON_BARS()->asItem();
@@ -150,66 +158,66 @@ class PlaySubCommand extends BaseSubCommand {
 		}
 
 		$highest = max($chosen);
-		$price = $bet * $highest;
+		$prize = $bet * $highest;
 
-		if ($price < 0) {
-			if (EconomyAPI::getInstance()->myMoney($player) < abs($price)) {
+		if ($prize < 0) {
+			if (EconomyAPI::getInstance()->myMoney($player) < abs($prize)) {
 				EconomyAPI::getInstance()->setMoney($player, 0, true, 'Lottery');
 			} else {
-				EconomyAPI::getInstance()->reduceMoney($player, abs($price), true, 'Lottery');
+				EconomyAPI::getInstance()->reduceMoney($player, abs($prize), true, 'Lottery');
 			}
 		} else {
-			EconomyAPI::getInstance()->addMoney($player, $price, true, 'Lottery');
+			EconomyAPI::getInstance()->addMoney($player, $prize, true, 'Lottery');
 		}
 
 		$menu->getInventory()->setContents($contents);
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $price, $chosen) : void {
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $chosen) : void {
 			$player = $transaction->getPlayer();
 			$slot = $transaction->getAction()->getSlot();
-			if ($slot >= 10 && $slot <= (count($chosen) + 9) && $menu->getInventory()->getItem($slot)->getTypeId() === VanillaBlocks::STONE()->asItem()->getTypeId()) {
+			$typeId = VanillaBlocks::STONE()->asItem()->getTypeId();
+
+			if ($slot >= 10 && $slot <= (count($chosen) + 9) && $menu->getInventory()->getItem($slot)->getTypeId() === $typeId) {
 				$mult = $chosen[$slot - 10];
 				$menu->getInventory()->setItem($slot, VanillaItems::PAPER()->setCustomName(($mult >= 1 ? TextFormat::GREEN : ($mult > 0 ? TextFormat::GOLD : TextFormat::RED)) . (string) $mult . 'x'));
 				$player->getWorld()->addSound($player->getPosition(), new XpCollectSound());
 				$inv = $menu->getInventory();
-				$checked = false;
+				$checked = true;
+
 				foreach ($chosen as $key => $value) {
-					if ($inv->getItem($key + 10)->getTypeId() === ItemTypeIds::PAPER) {
-						$checked = true;
-					} else {
+					$item = $inv->getItem((int) $key + 10);
+					if ($item->getTypeId() !== ItemTypeIds::PAPER) {
 						$checked = false;
 						break;
 					}
 				}
 
 				if ($checked) {
-					$menu->getInventory()->setItem(16, VanillaItems::PAPER()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING()))->setCustomName(($price <= 0 ? TextFormat::RED : ($price < $bet ? TextFormat::GOLD : TextFormat::GREEN)) . (string) $price));
+					$menu->getInventory()->setItem(16, VanillaItems::PAPER()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING()))->setCustomName(($prize <= 0 ? TextFormat::RED : ($prize < $bet ? TextFormat::GOLD : TextFormat::GREEN)) . (string) $prize));
 					$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(30));
 				}
 			}
 		}));
-		$menu->setInventoryCloseListener(function (Player $player, Inventory $inventory) use ($bet, $price) : void {
+
+		$menu->setInventoryCloseListener(function (Player $player, Inventory $inventory) use ($bet, $prize) : void {
 			unset($this->chosen[$player->getName()]);
-			$total = $price - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{price}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $price, (string) $bet, $player->getName()], Main::getInstance()->getConfig()->getNested('messages.broadcast-message')));
-			if ($price > $bet) {
-				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-price')));
-				return;
-			}
+			$total = $prize - $bet;
+			$player->getServer()->broadcastMessage(str_replace(['{price}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getConfig()->getNested('messages.broadcast-message')));
 
-			if ($total > -$bet && $total < $bet) {
-				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-less-price')));
-				return;
+			if ($prize > $bet) {
+				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-prize')));
+			} elseif ($total > -$bet && $total < $bet) {
+				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-less-prize')));
+			} else {
+				$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.loss-prize')));
 			}
-
-			$player->sendMessage(str_replace('{price}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.loss-price')));
 		});
+
 		$menu->send($player);
 	}
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered.
-	 */
 	protected function prepare() : void {
+		$this->addConstraint(new InGameRequiredConstraint($this));
+
 		$this->setPermission('lottery.play');
 	}
 }
