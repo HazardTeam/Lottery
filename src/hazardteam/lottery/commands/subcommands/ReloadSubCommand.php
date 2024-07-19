@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_8b1f1957a11fcbee\CortexPE\Commando\BaseSubCommand;
 use hazardteam\lottery\Main;
 
 class ReloadSubCommand extends BaseSubCommand {

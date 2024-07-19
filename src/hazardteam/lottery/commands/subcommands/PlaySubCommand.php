@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_8b1f1957a11fcbee\CortexPE\Commando\BaseSubCommand;
 use hazardteam\lottery\Main;
-use jojoe77777\FormAPI\CustomForm;
-use muqsit\invmenu\InvMenu;
-use muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_8b1f1957a11fcbee\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_8b1f1957a11fcbee\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_8b1f1957a11fcbee\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
