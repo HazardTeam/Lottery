@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_7d799c7bec630fa1\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_7d799c7bec630fa1\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_7d799c7bec630fa1\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_7d799c7bec630fa1\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_7d799c7bec630fa1\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -46,6 +46,7 @@ use function in_array;
 use function is_numeric;
 use function max;
 use function min;
+use function range;
 use function str_replace;
 
 class PlaySubCommand extends BaseSubCommand {
@@ -130,7 +131,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$colors = [DyeColor::RED(), DyeColor::GREEN(), DyeColor::CYAN(), DyeColor::ORANGE(), DyeColor::LIGHT_BLUE(), DyeColor::LIME()];
 		$contents = [];
 
-		for ($i = 0; $i <= 53; ++$i) {
+		foreach (range(0, 53) as $i) {
 			if (in_array($i, $this->innerSlot, true)) {
 				$color = $colors[array_rand($colors)];
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($color)->asItem();
@@ -166,8 +167,8 @@ class PlaySubCommand extends BaseSubCommand {
 				$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new PopSound());
 
 				if (count($this->chosen[$playerName]) === 5) {
-					foreach ($inventory->getContents() as $inventorySlot => $item) {
-						if ($item->getTypeId() === VanillaBlocks::VINES()->asItem()->getTypeId()) {
+					foreach (range(0, 53) as $inventorySlot) {
+						if ($inventory->getItem($inventorySlot)->getTypeId() === VanillaBlocks::VINES()->asItem()->getTypeId()) {
 							$inventory->setItem($inventorySlot, VanillaBlocks::WEEPING_VINES()->asItem());
 						}
 					}
@@ -191,7 +192,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setName(Main::getInstance()->getGuiTitle('reveal'));
 		$contents = [];
 
-		for ($i = 0; $i <= 26; ++$i) {
+		foreach (range(0, 26) as $i) {
 			if ($i < 10 || $i > 16 || $i === 15) {
 				$contents[$i] = VanillaBlocks::VINES()->asItem();
 			}
