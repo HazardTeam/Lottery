@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_9b5d5eaded1c1208\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_9b5d5eaded1c1208\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_6d19c0889371a630\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_6d19c0889371a630\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_9b5d5eaded1c1208\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_9b5d5eaded1c1208\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_9b5d5eaded1c1208\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_6d19c0889371a630\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_6d19c0889371a630\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_6d19c0889371a630\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
@@ -126,7 +126,7 @@ class PlaySubCommand extends BaseSubCommand {
 			} elseif ($i === 50) {
 				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal', '§aPreview Result'));
 			} else {
-				if(!isset($contents[$i])) $contents[$i] = VanillaBlocks::VINES()->asItem();
+				$contents[$i] = VanillaBlocks::VINES()->asItem();
 			}
 		}
 
