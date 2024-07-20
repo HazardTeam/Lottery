@@ -1,3 +1,9 @@
+# Economy settings.
+# Possible providers: bedrockeconomy, xp
+economy:
+  provider: BedrockEconomy
+
+# If you are using the "xp" provider, 1 unit = 1 level of experience.
 min-bet: 1000
 
 range:
@@ -5,10 +11,11 @@ range:
   0.00=2.00: 40
 
 messages:
+  transaction-failed: '§e| §cTransaction failed. Please try again later or contact an admin if the issue persists.'
   invalid-bet: "§e| §7Your bet must be a number."
-  receive-prize: "§e| §aYou won. Profit §b §a{prize}"
-  receive-less-prize: "§e| §cYou lost. Loss §b §c{prize}. §7Still better than a bigger loss."
-  loss-prize: "§e| §cYou lost. Loss §b §c{prize}"
+  receive-prize: "§e| §aYou won. Profit §b §a{prize}"
+  receive-less-prize: "§e| §cYou lost. Loss §b §c{prize}. §7Still better than a bigger loss."
+  loss-prize: "§e| §cYou lost. Loss §b §c{prize}"
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
   broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize}"
@@ -16,14 +23,14 @@ messages:
 forms:
   play:
     title: "§7-= §eLOTTERY §7=-"
-    content: "§6» §fYour balance: §b §a{money}"
+    content: "§6» §fYour balance: §b §a{money}"
 
 gui:
   lottery:
     title: "§7-= §eLOTTERY JACKPOT §7=-"
     items:
       reveal: "§aPreview Result"
-      bet-info: "§eYour Bet: §b §a{bet}"
+      bet-info: "§eYour Bet: §b §a{bet}"
   reveal:
     title: "§7-= §eRESULTS §7=-"
     items:

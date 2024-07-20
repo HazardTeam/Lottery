@@ -13,16 +13,21 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_6d19c0889371a630\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_9ac2f8890992e4e5\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_9ac2f8890992e4e5\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_9ac2f8890992e4e5\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
-use hazardteam\lottery\libs\_6d19c0889371a630\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_9ac2f8890992e4e5\muqsit\invmenu\InvMenuHandler;
+use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use function is_array;
 
 class Main extends PluginBase {
 	use SingletonTrait;
 
 	private LotteryManager $lottmanager;
+	private EconomyProvider $economyProvider;
 
 	public function onEnable() : void {
 		self::setInstance($this);
@@ -39,6 +44,21 @@ class Main extends PluginBase {
 
 		$this->lottmanager = new LotteryManager();
 
+		libPiggyEconomy::init();
+
+		$economyConfig = $this->getConfig()->get('economy');
+		if (!is_array($economyConfig) || !isset($economyConfig['provider'])) {
+			$this->getLogger()->critical('Invalid or missing "economy" configuration. Please provide an array with the key "provider".');
+			throw new DisablePluginException();
+		}
+
+		try {
+			$this->economyProvider = libPiggyEconomy::getProvider($economyConfig);
+		} catch (\Throwable $e) {
+			$this->getLogger()->critical('Failed to get economy provider: ' . $e->getMessage());
+			throw new DisablePluginException();
+		}
+
 		$this->getServer()->getCommandMap()->register('Lottery', new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry']));
 	}
 
@@ -49,5 +69,9 @@ class Main extends PluginBase {
 
 	public function getLotteryManager() : LotteryManager {
 		return $this->lottmanager;
+	}
+
+	public function getEconomyProvider() : EconomyProvider {
+		return $this->economyProvider;
 	}
 }
