@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands;
 
-use hazardteam\lottery\libs\_8da566e0b52ad2f8\CortexPE\Commando\BaseCommand;
+use hazardteam\lottery\libs\_bcba9e69186e5de7\CortexPE\Commando\BaseCommand;
 use hazardteam\lottery\commands\subcommands\PlaySubCommand;
 use hazardteam\lottery\commands\subcommands\ReloadSubCommand;
 use hazardteam\lottery\Main;
@@ -24,7 +24,7 @@ use function count;
 class LotteryCommand extends BaseCommand {
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (count($args) === 0) {
-			$sender->sendMessage('Usage: /lottery <play>');
+			$this->sendUsage();
 		}
 	}
 
