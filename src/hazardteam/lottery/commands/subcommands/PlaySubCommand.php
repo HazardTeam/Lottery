@@ -19,7 +19,6 @@ use hazardteam\lottery\Main;
 use jojoe77777\FormAPI\CustomForm;
 use muqsit\invmenu\InvMenu;
 use muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
-use onebone\economyapi\EconomyAPI;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\command\CommandSender;
@@ -75,39 +74,48 @@ class PlaySubCommand extends BaseSubCommand {
 	}
 
 	private function showPlayMenu(Player $player) : void {
-		$form = new CustomForm(function (Player $player, $data = null) : void {
-			if ($data === null) {
-				return;
-			}
+		$economyProvider = Main::getInstance()->getEconomyProvider();
+		$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player) : void {
+			$form = new CustomForm(function (Player $player, $data = null) use ($economyProvider, $amount) : void {
+				if ($data === null) {
+					return;
+				}
 
-			if (!is_numeric($data['bet'])) {
-				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.invalid-bet'));
-				return;
-			}
+				if (!is_numeric($data['bet'])) {
+					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.invalid-bet'));
+					return;
+				}
 
-			$bet = (int) $data['bet'];
-			$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet', 1000);
+				$bet = (int) $data['bet'];
+				$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet', 1000);
 
-			if ($bet < $minBet) {
-				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-than-min-bet'));
-				return;
-			}
+				if ($bet < $minBet) {
+					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-than-min-bet'));
+					return;
+				}
 
-			if (EconomyAPI::getInstance()->myMoney($player) < $bet) {
-				$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.not-enough-money'));
-				return;
-			}
+				if ($amount < $bet) {
+					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.not-enough-money'));
+					return;
+				}
 
-			EconomyAPI::getInstance()->reduceMoney($player, $bet, true, 'Lottery');
-			$pk = PlaySoundPacket::create('ambient.cave', $player->getPosition()->getX(), $player->getPosition()->getY(), $player->getPosition()->getZ(), 185.0, 1);
-			$player->getNetworkSession()->sendDataPacket($pk, true);
-			$this->showLotteryMenu($player, $bet);
+				$economyProvider->takeMoney($player, $bet, function (bool $success) use ($player, $bet) : void {
+					if (!$success) {
+						$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+						return;
+					}
+
+					$pk = PlaySoundPacket::create('ambient.cave', $player->getPosition()->getX(), $player->getPosition()->getY(), $player->getPosition()->getZ(), 185.0, 1);
+					$player->getNetworkSession()->sendDataPacket($pk, true);
+					$this->showLotteryMenu($player, $bet);
+				});
+			});
+
+			$form->setTitle(Main::getInstance()->getConfig()->getNested('forms.play.title'));
+			$form->addLabel(str_replace('{money}', (string) $amount, Main::getInstance()->getConfig()->getNested('forms.play.content')));
+			$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet', 1000)), label: 'bet');
+			$player->sendForm($form);
 		});
-
-		$form->setTitle(Main::getInstance()->getConfig()->getNested('forms.play.title'));
-		$form->addLabel(str_replace('{money}', (string) EconomyAPI::getInstance()->myMoney($player), Main::getInstance()->getConfig()->getNested('forms.play.content')));
-		$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet', 1000)), label: 'bet');
-		$player->sendForm($form);
 	}
 
 	private function showLotteryMenu(Player $player, int $bet) : void {
@@ -169,6 +177,7 @@ class PlaySubCommand extends BaseSubCommand {
 	}
 
 	private function revealPrize(Player $player, int $bet, array $table, array $chosenColor) : void {
+		$economyProvider = Main::getInstance()->getEconomyProvider();
 		$menu = InvMenu::create(InvMenu::TYPE_CHEST);
 		$menu->setName((string) Main::getInstance()->getConfig()->getNested('gui.reveal.title'));
 		$contents = [];
@@ -193,13 +202,27 @@ class PlaySubCommand extends BaseSubCommand {
 		$prize = $bet * $highest;
 
 		if ($prize < 0) {
-			if (EconomyAPI::getInstance()->myMoney($player) < abs($prize)) {
-				EconomyAPI::getInstance()->setMoney($player, 0, true, 'Lottery');
-			} else {
-				EconomyAPI::getInstance()->reduceMoney($player, abs($prize), true, 'Lottery');
-			}
+			$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player, $prize) : void {
+				if ($amount < abs($prize)) {
+					$economyProvider->setMoney($player, 0, function (bool $success) use ($player) : void {
+						if (!$success) {
+							$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+						}
+					});
+				} else {
+					$economyProvider->takeMoney($player, abs($prize), function (bool $success) use ($player) : void {
+						if (!$success) {
+							$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+						}
+					});
+				}
+			});
 		} else {
-			EconomyAPI::getInstance()->addMoney($player, $prize, true, 'Lottery');
+			$economyProvider->giveMoney($player, $prize, function (bool $success) use ($player) : void {
+				if (!$success) {
+					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+				}
+			});
 		}
 
 		$menu->getInventory()->setContents($contents);
