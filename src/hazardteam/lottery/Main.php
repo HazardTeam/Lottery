@@ -13,26 +13,35 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_9ac2f8890992e4e5\CortexPE\Commando\PacketHooker;
-use hazardteam\lottery\libs\_9ac2f8890992e4e5\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
-use hazardteam\lottery\libs\_9ac2f8890992e4e5\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
+use hazardteam\lottery\libs\_8da566e0b52ad2f8\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_8da566e0b52ad2f8\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_8da566e0b52ad2f8\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
-use hazardteam\lottery\libs\_9ac2f8890992e4e5\muqsit\invmenu\InvMenuHandler;
+use InvalidArgumentException;
+use hazardteam\lottery\libs\_8da566e0b52ad2f8\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use function is_array;
+use function is_numeric;
+use function is_string;
+use function preg_match;
 
 class Main extends PluginBase {
 	use SingletonTrait;
+
+	private array $economyConfig;
+	private int $minBet;
+	private array $range;
+	private array $messages;
+	private array $forms;
+	private array $gui;
 
 	private LotteryManager $lottmanager;
 	private EconomyProvider $economyProvider;
 
 	public function onEnable() : void {
 		self::setInstance($this);
-
-		$this->saveDefaultConfig();
 
 		if (!InvMenuHandler::isRegistered()) {
 			InvMenuHandler::register($this);
@@ -42,18 +51,19 @@ class Main extends PluginBase {
 			PacketHooker::register($this);
 		}
 
-		$this->lottmanager = new LotteryManager();
-
-		libPiggyEconomy::init();
-
-		$economyConfig = $this->getConfig()->get('economy');
-		if (!is_array($economyConfig) || !isset($economyConfig['provider'])) {
-			$this->getLogger()->critical('Invalid or missing "economy" configuration. Please provide an array with the key "provider".');
+		try {
+			$this->loadConfig();
+		} catch (\Throwable $e) {
+			$this->getLogger()->error('An error occurred while loading the configuration: ' . $e->getMessage());
 			throw new DisablePluginException();
 		}
 
+		$this->lottmanager = new LotteryManager($this->range);
+
+		libPiggyEconomy::init();
+
 		try {
-			$this->economyProvider = libPiggyEconomy::getProvider($economyConfig);
+			$this->economyProvider = libPiggyEconomy::getProvider($this->economyConfig);
 		} catch (\Throwable $e) {
 			$this->getLogger()->critical('Failed to get economy provider: ' . $e->getMessage());
 			throw new DisablePluginException();
@@ -62,9 +72,131 @@ class Main extends PluginBase {
 		$this->getServer()->getCommandMap()->register('Lottery', new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry']));
 	}
 
+	/**
+	 * Loads and validates the plugin configuration from the `config.yml` file.
+	 * If the configuration is invalid, an exception will be thrown.
+	 *
+	 * @throws InvalidArgumentException when the configuration is invalid
+	 */
+	private function loadConfig() : void {
+		$config = $this->getConfig();
+
+		$economyConfig = $config->get('economy');
+		if (!is_array($economyConfig) || !isset($economyConfig['provider'])) {
+			throw new InvalidArgumentException('Invalid or missing "economy" configuration. Please provide an array with the key "provider".');
+		}
+
+		$minBet = $config->get('min-bet', null);
+		if (!is_numeric($minBet) || $minBet <= 0) {
+			throw new InvalidArgumentException("Invalid minimum bet. 'min-bet' must be a positive number.");
+		}
+
+		$minBet = (int) $minBet;
+
+		$range = $config->get('range', []);
+		if (!is_array($range)) {
+			throw new InvalidArgumentException("Invalid range settings. 'range' must be an array.");
+		}
+
+		foreach ($range as $key => $value) {
+			if (!is_string($key) || (preg_match('/^-?\d+(\.\d+)?=-?\d+(\.\d+)?$/', $key) === false)) {
+				throw new InvalidArgumentException("Invalid range key format '{$key}'. Must be in the format 'min=max'.");
+			}
+
+			if (!is_numeric($value) || $value <= 0) {
+				throw new InvalidArgumentException("Invalid range value for '{$key}'. Must be a positive number.");
+			}
+		}
+
+		$messages = $config->get('messages', []);
+		if (!is_array($messages)) {
+			throw new InvalidArgumentException("Invalid messages settings. 'messages' must be an array.");
+		}
+
+		$requiredMessages = [
+			'transaction-failed', 'invalid-bet', 'receive-prize', 'receive-less-prize', 'loss-prize',
+			'no-enough-money', 'less-than-min-bet', 'broadcast-message',
+		];
+		foreach ($requiredMessages as $message) {
+			if (!isset($messages[$message]) || !is_string($messages[$message])) {
+				throw new InvalidArgumentException("Missing or invalid message for '{$message}'.");
+			}
+		}
+
+		$forms = $config->get('forms', []);
+		if (!is_array($forms)) {
+			throw new InvalidArgumentException("Invalid forms settings. 'forms' must be an array.");
+		}
+
+		$playForm = $forms['play'] ?? null;
+		if (!is_array($playForm)) {
+			throw new InvalidArgumentException("Invalid form 'play'. Must be an array.");
+		}
+
+		if (!isset($playForm['title']) || !is_string($playForm['title'])) {
+			throw new InvalidArgumentException("Invalid form 'play'. 'title' must be provided and must be a string.");
+		}
+
+		if (!isset($playForm['content']) || !is_string($playForm['content'])) {
+			throw new InvalidArgumentException("Invalid form 'play'. 'content' must be provided and must be a string.");
+		}
+
+		$gui = $config->get('gui', []);
+		if (!is_array($gui)) {
+			throw new InvalidArgumentException("Invalid GUI settings. 'gui' must be an array.");
+		}
+
+		$lotteryGui = $gui['lottery'] ?? null;
+		if (!is_array($lotteryGui)) {
+			throw new InvalidArgumentException("Invalid GUI 'lottery'. Must be an array.");
+		}
+
+		if (!isset($lotteryGui['title']) || !is_string($lotteryGui['title'])) {
+			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'title' must be provided and must be a string.");
+		}
+
+		$lotteryItems = $lotteryGui['items'] ?? null;
+		if (!is_array($lotteryItems)) {
+			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'items' must be an array.");
+		}
+
+		if (!isset($lotteryItems['reveal']) || !is_string($lotteryItems['reveal'])) {
+			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'reveal' item must be provided and must be a string.");
+		}
+
+		if (!isset($lotteryItems['bet-info']) || !is_string($lotteryItems['bet-info'])) {
+			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'bet-info' item must be provided and must be a string.");
+		}
+
+		$revealGui = $gui['reveal'] ?? null;
+		if (!is_array($revealGui)) {
+			throw new InvalidArgumentException("Invalid GUI 'reveal'. Must be an array.");
+		}
+
+		if (!isset($revealGui['title']) || !is_string($revealGui['title'])) {
+			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'title' must be provided and must be a string.");
+		}
+
+		$revealItems = $revealGui['items'] ?? null;
+		if (!is_array($revealItems)) {
+			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'items' must be an array.");
+		}
+
+		if (!isset($revealItems['reveal-result']) || !is_string($revealItems['reveal-result'])) {
+			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'reveal-result' item must be provided and must be a string.");
+		}
+
+		$this->economyConfig = $economyConfig;
+		$this->minBet = $minBet;
+		$this->range = $range;
+		$this->messages = $messages;
+		$this->forms = $forms;
+		$this->gui = $gui;
+	}
+
 	public function reload() : void {
 		$this->getConfig()->reload();
-		$this->lottmanager = new LotteryManager();
+		$this->lottmanager = new LotteryManager($this->range);
 	}
 
 	public function getLotteryManager() : LotteryManager {
@@ -73,5 +205,33 @@ class Main extends PluginBase {
 
 	public function getEconomyProvider() : EconomyProvider {
 		return $this->economyProvider;
+	}
+
+	public function getMinBet() : int {
+		return $this->minBet;
+	}
+
+	public function getRange() : array {
+		return $this->range;
+	}
+
+	public function getMessage(string $key) : string {
+		return $this->messages[$key] ?? '';
+	}
+
+	public function getFormTitle(string $form) : string {
+		return $this->forms[$form]['title'] ?? '';
+	}
+
+	public function getFormContent(string $form) : string {
+		return $this->forms[$form]['content'] ?? '';
+	}
+
+	public function getGuiTitle(string $guiType) : string {
+		return $this->gui[$guiType]['title'] ?? '';
+	}
+
+	public function getGuiItem(string $guiType, string $item) : string {
+		return $this->gui[$guiType]['items'][$item] ?? '';
 	}
 }
