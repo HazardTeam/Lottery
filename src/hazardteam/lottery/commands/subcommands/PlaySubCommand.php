@@ -82,26 +82,26 @@ class PlaySubCommand extends BaseSubCommand {
 				}
 
 				if (!is_numeric($data['bet'])) {
-					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.invalid-bet'));
+					$player->sendMessage(Main::getInstance()->getMessage('invalid-bet'));
 					return;
 				}
 
 				$bet = (int) $data['bet'];
-				$minBet = (int) Main::getInstance()->getConfig()->getNested('min-bet', 1000);
+				$minBet = Main::getInstance()->getMinBet();
 
 				if ($bet < $minBet) {
-					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.less-than-min-bet'));
+					$player->sendMessage(Main::getInstance()->getMessage('less-than-min-bet'));
 					return;
 				}
 
 				if ($amount < $bet) {
-					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.not-enough-money'));
+					$player->sendMessage(Main::getInstance()->getMessage('not-enough-money'));
 					return;
 				}
 
 				$economyProvider->takeMoney($player, $bet, function (bool $success) use ($player, $bet) : void {
 					if (!$success) {
-						$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+						$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
 						return;
 					}
 
@@ -111,9 +111,9 @@ class PlaySubCommand extends BaseSubCommand {
 				});
 			});
 
-			$form->setTitle(Main::getInstance()->getConfig()->getNested('forms.play.title'));
-			$form->addLabel(str_replace('{money}', (string) $amount, Main::getInstance()->getConfig()->getNested('forms.play.content')));
-			$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getConfig()->getNested('min-bet', 1000)), label: 'bet');
+			$form->setTitle(Main::getInstance()->getFormTitle('play'));
+			$form->addLabel(str_replace('{money}', (string) $amount, Main::getInstance()->getFormContent('play')));
+			$form->addInput('§6» §fPlace your bet:', default: (string) (Main::getInstance()->getMinBet()), label: 'bet');
 			$player->sendForm($form);
 		});
 	}
@@ -130,16 +130,16 @@ class PlaySubCommand extends BaseSubCommand {
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($color)->asItem();
 				$chosenColor[array_search($i, $this->innerSlot, true)] = $color;
 			} elseif ($i === 48) {
-				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getConfig()->getNested('gui.lottery.items.bet-info', '§eYour Bet: §b §a{bet}')));
+				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getGuiItem('lottery', 'bet-info')));
 			} elseif ($i === 50) {
-				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.lottery.items.reveal', '§aPreview Result'));
+				$contents[$i] = VanillaItems::GOLD_INGOT()->setCustomName(Main::getInstance()->getGuiItem('lottery', 'reveal'));
 			} else {
 				$contents[$i] = VanillaBlocks::VINES()->asItem();
 			}
 		}
 
 		$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-		$menu->setName((string) Main::getInstance()->getConfig()->getNested('gui.lottery.title', ''));
+		$menu->setName(Main::getInstance()->getGuiTitle('lottery'));
 		$menu->getInventory()->setContents($contents);
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table, $chosenColor) : void {
 			$slot = $transaction->getAction()->getSlot();
@@ -179,7 +179,7 @@ class PlaySubCommand extends BaseSubCommand {
 	private function revealPrize(Player $player, int $bet, array $table, array $chosenColor) : void {
 		$economyProvider = Main::getInstance()->getEconomyProvider();
 		$menu = InvMenu::create(InvMenu::TYPE_CHEST);
-		$menu->setName((string) Main::getInstance()->getConfig()->getNested('gui.reveal.title'));
+		$menu->setName(Main::getInstance()->getGuiTitle('reveal'));
 		$contents = [];
 
 		for ($i = 0; $i <= 26; ++$i) {
@@ -193,7 +193,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$count = 10;
 		foreach ($this->chosen[$player->getName()] as $key => $innerSlot) {
 			$color = $chosenColor[$innerSlot];
-			$contents[$count] = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem()->setCustomName(Main::getInstance()->getConfig()->getNested('gui.reveal.items.reveal-result'));
+			$contents[$count] = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem()->setCustomName(Main::getInstance()->getGuiItem('reveal', 'reveal-result'));
 			$chosen[$key] = (float) $table[$innerSlot];
 			++$count;
 		}
@@ -206,13 +206,13 @@ class PlaySubCommand extends BaseSubCommand {
 				if ($amount < abs($prize)) {
 					$economyProvider->setMoney($player, 0, function (bool $success) use ($player) : void {
 						if (!$success) {
-							$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+							$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
 						}
 					});
 				} else {
 					$economyProvider->takeMoney($player, abs($prize), function (bool $success) use ($player) : void {
 						if (!$success) {
-							$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+							$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
 						}
 					});
 				}
@@ -220,7 +220,7 @@ class PlaySubCommand extends BaseSubCommand {
 		} else {
 			$economyProvider->giveMoney($player, $prize, function (bool $success) use ($player) : void {
 				if (!$success) {
-					$player->sendMessage(Main::getInstance()->getConfig()->getNested('messages.transaction-failed'));
+					$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
 				}
 			});
 		}
@@ -256,14 +256,14 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setInventoryCloseListener(function (Player $player, Inventory $inventory) use ($bet, $prize) : void {
 			unset($this->chosen[$player->getName()]);
 			$total = $prize - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getConfig()->getNested('messages.broadcast-message')));
+			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getMessage('broadcast-message')));
 
 			if ($prize > $bet) {
-				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('receive-prize')));
 			} elseif ($total > -$bet && $total < $bet) {
-				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.receive-less-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('receive-less-prize')));
 			} else {
-				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getConfig()->getNested('messages.loss-prize')));
+				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('loss-prize')));
 			}
 		});
 

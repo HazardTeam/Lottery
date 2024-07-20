@@ -13,11 +13,9 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use UnexpectedValueException;
 use function array_merge;
 use function count;
 use function explode;
-use function is_array;
 use function mt_rand;
 use function shuffle;
 
@@ -29,15 +27,7 @@ class LotteryManager {
 	 */
 	private array $ranges = [];
 
-	public function __construct() {
-		$config = Main::getInstance()->getConfig();
-		/** @var string $range */
-		$range = $config->get('range');
-
-		if (!is_array($range)) {
-			throw new UnexpectedValueException('Expected an array  from config range');
-		}
-
+	public function __construct(array $range) {
 		foreach ($range as $key => $value) {
 			$ranges = explode('=', $key);
 			$this->ranges[] = new LotteryRange($ranges[0], $ranges[1], (int) $value);
