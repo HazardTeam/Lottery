@@ -15,24 +15,24 @@ range:
 messages:
   transaction-failed: '§e| §cTransaction failed. Please try again later or contact an admin if the issue persists.'
   invalid-bet: "§e| §7Your bet must be a number."
-  receive-prize: "§e| §aYou won. Profit §b §a{prize}"
-  receive-less-prize: "§e| §cYou lost. Loss §b §c{prize}. §7Still better than a bigger loss."
-  loss-prize: "§e| §cYou lost. Loss §b §c{prize}"
+  receive-prize: "§e| §aYou won. Profit  §a{prize}"
+  receive-less-prize: "§e| §cYou lost. Loss  §c{prize}. §7Still better than a bigger loss."
+  loss-prize: "§e| §cYou lost. Loss  §c{prize}"
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
-  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize} with §6{calculation} calculation "
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize} §fwith §6{calculation} §fcalculation."
 
 forms:
   play:
     title: "§7-= §eLOTTERY §7=-"
-    content: "§6» §fYour balance: §b §a{money}"
+    content: "§6» §fYour balance:  §a{money}"
 
 gui:
   lottery:
     title: "§7-= §eLOTTERY JACKPOT §7=-"
     items:
       reveal: "§aPreview Result"
-      bet-info: "§eYour Bet: §b §a{bet}"
+      bet-info: "§eYour Bet:  §a{bet}"
   reveal:
     title: "§7-= §eRESULTS §7=-"
     items:
