@@ -13,19 +13,19 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_bcba9e69186e5de7\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_bcba9e69186e5de7\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_7d799c7bec630fa1\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_7d799c7bec630fa1\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
-use hazardteam\lottery\libs\_bcba9e69186e5de7\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_bcba9e69186e5de7\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_bcba9e69186e5de7\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use InvalidArgumentException;
+use hazardteam\lottery\libs\_7d799c7bec630fa1\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_7d799c7bec630fa1\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_7d799c7bec630fa1\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\block\Wool;
 use pocketmine\command\CommandSender;
-use pocketmine\inventory\Inventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
@@ -37,15 +37,22 @@ use pocketmine\world\sound\XpCollectSound;
 use pocketmine\world\sound\XpLevelUpSound;
 use function abs;
 use function array_rand;
+use function array_reduce;
 use function array_search;
+use function array_sum;
 use function count;
+use function implode;
 use function in_array;
 use function is_numeric;
 use function max;
+use function min;
 use function str_replace;
 
 class PlaySubCommand extends BaseSubCommand {
+	/** @var array<int> */
 	private array $innerSlot = [];
+
+	/** @var array<string, array<array{color: DyeColor, multiplier: float|int}>> */
 	private array $chosen = [];
 
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
@@ -122,13 +129,11 @@ class PlaySubCommand extends BaseSubCommand {
 		$table = Main::getInstance()->getLotteryManager()->getTables();
 		$colors = [DyeColor::RED(), DyeColor::GREEN(), DyeColor::CYAN(), DyeColor::ORANGE(), DyeColor::LIGHT_BLUE(), DyeColor::LIME()];
 		$contents = [];
-		$chosenColor = [];
 
 		for ($i = 0; $i <= 53; ++$i) {
 			if (in_array($i, $this->innerSlot, true)) {
 				$color = $colors[array_rand($colors)];
 				$contents[$i] = VanillaBlocks::WOOL()->setColor($color)->asItem();
-				$chosenColor[array_search($i, $this->innerSlot, true)] = $color;
 			} elseif ($i === 48) {
 				$contents[$i] = VanillaItems::BOOK()->setCustomName(str_replace('{bet}', (string) $bet, Main::getInstance()->getGuiItem('lottery', 'bet-info')));
 			} elseif ($i === 50) {
@@ -141,19 +146,23 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
 		$menu->setName(Main::getInstance()->getGuiTitle('lottery'));
 		$menu->getInventory()->setContents($contents);
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table, $chosenColor) : void {
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table) : void {
+			$inventory = $menu->getInventory();
 			$slot = $transaction->getAction()->getSlot();
 			$playerName = $transaction->getPlayer()->getName();
-			$inventory = $menu->getInventory();
+			$chosenWool = $transaction->getAction()->getSourceItem()->getBlock();
 
 			if (!isset($this->chosen[$playerName])) {
 				$this->chosen[$playerName] = [];
 			}
 
 			if (in_array($slot, $this->innerSlot, true) && count($this->chosen[$playerName]) < 5) {
-				$color = $chosenColor[array_search($slot, $this->innerSlot, true)];
-				$this->chosen[$playerName][] = array_search($slot, $this->innerSlot, true);
-				$menu->getInventory()->setItem($slot, VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem());
+				if (!$chosenWool instanceof Wool) {
+					return;
+				}
+
+				$this->chosen[$playerName][] = ['color' => $chosenWool->getColor(), 'multiplier' => $table[array_search($slot, $this->innerSlot, true)]];
+				$menu->getInventory()->setItem($slot, VanillaBlocks::GLAZED_TERRACOTTA()->setColor($chosenWool->getColor())->asItem());
 				$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new PopSound());
 
 				if (count($this->chosen[$playerName]) === 5) {
@@ -167,7 +176,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 			if ($slot === 50) {
 				if (count($this->chosen[$playerName]) > 0) {
-					$this->revealPrize($transaction->getPlayer(), $bet, $table, $chosenColor);
+					$this->revealPrize($transaction->getPlayer(), $bet);
 					$transaction->getPlayer()->getWorld()->addSound($transaction->getPlayer()->getPosition(), new XpCollectSound());
 				}
 			}
@@ -176,7 +185,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->send($player);
 	}
 
-	private function revealPrize(Player $player, int $bet, array $table, array $chosenColor) : void {
+	private function revealPrize(Player $player, int $bet) : void {
 		$economyProvider = Main::getInstance()->getEconomyProvider();
 		$menu = InvMenu::create(InvMenu::TYPE_CHEST);
 		$menu->setName(Main::getInstance()->getGuiTitle('reveal'));
@@ -188,18 +197,18 @@ class PlaySubCommand extends BaseSubCommand {
 			}
 		}
 
-		$chosen = [];
+		/** @var array<float|int> $multipliers */
+		$multipliers = [];
 
-		$count = 10;
-		foreach ($this->chosen[$player->getName()] as $key => $innerSlot) {
-			$color = $chosenColor[$innerSlot];
-			$contents[$count] = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($color)->asItem()->setCustomName(Main::getInstance()->getGuiItem('reveal', 'reveal-result'));
-			$chosen[$key] = (float) $table[$innerSlot];
-			++$count;
+		foreach ($this->chosen[$player->getName()] as $key => $value) {
+			$contents[$key + 10] = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($value['color'])->asItem();
+			$multipliers[$key + 10] = $value['multiplier'];
 		}
 
-		$highest = max($chosen);
-		$prize = $bet * $highest;
+		[$totalMultiplier, $calculationMessage] = $this->calculateLotteryMultiplier($multipliers);
+		$count = count($multipliers);
+
+		$prize = $bet * $totalMultiplier;
 
 		if ($prize < 0) {
 			$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player, $prize) : void {
@@ -226,37 +235,29 @@ class PlaySubCommand extends BaseSubCommand {
 		}
 
 		$menu->getInventory()->setContents($contents);
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $chosen, $chosenColor) : void {
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $multipliers, $totalMultiplier, $count, $calculationMessage) : void {
 			$player = $transaction->getPlayer();
+			$playerName = $player->getName();
 			$slot = $transaction->getAction()->getSlot();
-			$typeId = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($chosenColor[$slot - 10])->asItem()->getTypeId();
+			$sourceItem = $transaction->getAction()->getSourceItem();
 
-			if ($slot >= 10 && $slot <= (count($chosen) + 9) && $menu->getInventory()->getItem($slot)->getTypeId() === $typeId) {
-				$mult = $chosen[$slot - 10];
-				$menu->getInventory()->setItem($slot, VanillaItems::PAPER()->setCustomName(($mult >= 1 ? TextFormat::GREEN : ($mult > 0 ? TextFormat::GOLD : TextFormat::RED)) . (string) $mult . 'x'));
+			if ($slot >= 10 && $slot <= ($count + 9) && $sourceItem->getTypeId() !== VanillaItems::PAPER()->getTypeId()) {
+				$multiplier = $multipliers[$slot];
+				unset($this->chosen[$playerName][$slot - 10]);
+				$menu->getInventory()->setItem($slot, VanillaItems::PAPER()->setCustomName($this->highlightTextColor($multiplier) . (string) $multiplier . 'x'));
 				$player->getWorld()->addSound($player->getPosition(), new XpCollectSound());
-				$inv = $menu->getInventory();
-				$checked = true;
 
-				foreach ($chosen as $key => $value) {
-					$item = $inv->getItem((int) $key + 10);
-					if ($item->getTypeId() !== ItemTypeIds::PAPER) {
-						$checked = false;
-						break;
-					}
-				}
-
-				if ($checked) {
-					$menu->getInventory()->setItem(16, VanillaItems::PAPER()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING()))->setCustomName(($prize <= 0 ? TextFormat::RED : ($prize < $bet ? TextFormat::GOLD : TextFormat::GREEN)) . (string) $prize));
+				if (count($this->chosen[$playerName]) === 0) {
+					unset($this->chosen[$playerName]);
+					$menu->getInventory()->setItem(16, VanillaItems::PAPER()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING()))->setCustomName($this->highlightTextColor($prize, $bet) . (string) $prize)->setLore([$calculationMessage . ' = ' . $this->highlightTextColor($totalMultiplier) . (string) $totalMultiplier]));
 					$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(30));
 				}
 			}
 		}));
 
-		$menu->setInventoryCloseListener(function (Player $player, Inventory $inventory) use ($bet, $prize) : void {
-			unset($this->chosen[$player->getName()]);
+		$menu->setInventoryCloseListener(function (Player $player) use ($bet, $prize, $calculationMessage, $totalMultiplier) : void {
 			$total = $prize - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}'], [(string) $total, (string) $prize, (string) $bet, $player->getName()], Main::getInstance()->getMessage('broadcast-message')));
+			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}', '{calculation}', '{multiplier}'], [(string) $total, (string) $prize, (string) $bet, $player->getName(), $calculationMessage, (string) $totalMultiplier], Main::getInstance()->getMessage('broadcast-message')));
 
 			if ($prize > $bet) {
 				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('receive-prize')));
@@ -268,6 +269,45 @@ class PlaySubCommand extends BaseSubCommand {
 		});
 
 		$menu->send($player);
+	}
+
+	private function highlightTextColor(float|int $multiplier, int $goldCondition = 1) : string {
+		return $multiplier >= $goldCondition ? TextFormat::GREEN : ($multiplier > 0 ? TextFormat::GOLD : TextFormat::RED);
+	}
+
+	/**
+	 * Calculate the lottery multiplier based on the given option.
+	 *
+	 * @param array<float|int> $multipliers The array of multipliers
+	 * @param string           $option      The calculation option ('max', 'min', 'average', 'product')
+	 *
+	 * @return array{0: float, 1: string}
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	private function calculateLotteryMultiplier(array $multipliers, string $option = 'max') : array {
+		switch ($option) {
+			case 'max':
+				$totalMultiplier = max($multipliers);
+				$calculationMessage = 'Maximum';
+				break;
+			case 'min':
+				$totalMultiplier = min($multipliers);
+				$calculationMessage = 'Minimum';
+				break;
+			case 'average':
+				$totalMultiplier = array_sum($multipliers) / count($multipliers);
+				$calculationMessage = 'Average';
+				break;
+			case 'product':
+				$totalMultiplier = array_reduce($multipliers, fn ($last, $current) => $last * $current, 1);
+				$calculationMessage = 'Cumulative Multiplication';
+				break;
+			default:
+				throw new InvalidArgumentException('invalid option: ' . $option);
+		}
+
+		return [$totalMultiplier, $calculationMessage . '(' . implode(', ', $multipliers) . ')'];
 	}
 
 	protected function prepare() : void {

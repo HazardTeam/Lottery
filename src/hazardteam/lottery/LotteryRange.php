@@ -38,6 +38,9 @@ class LotteryRange {
 		return $this->chance;
 	}
 
+	/**
+	 * @return array<float>
+	 */
 	public function getTable() : array {
 		$table = [];
 		$startRange = explode('.', $this->startRange);

@@ -1,7 +1,7 @@
 # Lottery Configuration
 
 # Economy settings.
-# Possible providers: bedrockeconomy, xp
+# Possible providers: economyapi, bedrockeconomy, xp
 economy:
   provider: BedrockEconomy
 
@@ -20,7 +20,7 @@ messages:
   loss-prize: "§e| §cYou lost. Loss §b §c{prize}"
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
-  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize}"
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize} with §6{calculation} calculation "
 
 forms:
   play:
