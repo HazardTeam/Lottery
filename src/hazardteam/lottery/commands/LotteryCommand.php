@@ -24,7 +24,7 @@ use function count;
 class LotteryCommand extends BaseCommand {
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (count($args) === 0) {
-			$sender->sendMessage('Usage: /lottery <play>');
+			$this->sendUsage();
 		}
 	}
 
