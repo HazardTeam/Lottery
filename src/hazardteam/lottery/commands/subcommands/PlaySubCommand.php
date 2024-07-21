@@ -258,7 +258,9 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$menu->setInventoryCloseListener(function (Player $player) use ($bet, $prize, $calculationMessage, $totalMultiplier) : void {
 			$total = $prize - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}', '{calculation}', '{multiplier}'], [(string) $total, (string) $prize, (string) $bet, $player->getName(), $calculationMessage, (string) $totalMultiplier], Main::getInstance()->getMessage('broadcast-message')));
+			$status = $prize < 0 ? "Loss" : "Win";
+			unset($this->chosen[$player->getName()]);
+			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{earn}', '{bet}', '{player}', '{calculation}', '{multiplier}', '{status}'], [(string) $total, (string) $prize, (string) $bet, $player->getName(), $calculationMessage, (string) $totalMultiplier, $status], Main::getInstance()->getMessage('broadcast-message')));
 
 			if ($prize > $bet) {
 				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('receive-prize')));

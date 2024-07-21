@@ -15,7 +15,6 @@ namespace hazardteam\lottery;
 
 use function array_merge;
 use function count;
-use function explode;
 use function mt_rand;
 use function shuffle;
 
@@ -27,10 +26,12 @@ class LotteryManager {
 	 */
 	private array $ranges = [];
 
+	/**
+	 * @param array<int, array{minRange: string, maxRange: string, chance: int}> $range
+	 */
 	public function __construct(array $range) {
-		foreach ($range as $key => $value) {
-			$ranges = explode('=', $key);
-			$this->ranges[] = new LotteryRange($ranges[0], $ranges[1], (int) $value);
+		foreach ($range as $value) {
+			$this->ranges[] = new LotteryRange($value['minRange'], $value['maxRange'], $value['chance']);
 		}
 	}
 

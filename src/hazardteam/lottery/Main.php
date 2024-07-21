@@ -25,13 +25,13 @@ use pocketmine\utils\SingletonTrait;
 use function is_array;
 use function is_numeric;
 use function is_string;
-use function preg_match;
 
 class Main extends PluginBase {
 	use SingletonTrait;
 
 	private array $economyConfig;
 	private int $minBet;
+	/** @var array<int, array{minRange: string, maxRange: string, chance: int}> */
 	private array $range;
 	private array $messages;
 	private array $forms;
@@ -93,19 +93,21 @@ class Main extends PluginBase {
 
 		$minBet = (int) $minBet;
 
+		/** @var array<int, array{minRange: string, maxRange: string, chance: int}> $range */
 		$range = $config->get('range', []);
 		if (!is_array($range)) {
 			throw new InvalidArgumentException("Invalid range settings. 'range' must be an array.");
 		}
 
-		foreach ($range as $key => $value) {
-			if (!is_string($key) || (preg_match('/^-?\d+(\.\d+)?=-?\d+(\.\d+)?$/', $key) === false)) {
-				throw new InvalidArgumentException("Invalid range key format '{$key}'. Must be in the format 'min=max'.");
-			}
+		foreach ($range as $value) {
+			$minRange = $value['minRange'] ?? null;
+			$maxRange = $value['maxRange'] ?? null;
+			$chance = $value['chance'] ?? null;
 
-			if (!is_numeric($value) || $value <= 0) {
-				throw new InvalidArgumentException("Invalid range value for '{$key}'. Must be a positive number.");
-			}
+			if (!is_string($minRange) || !is_numeric($minRange) ||
+				!is_string($maxRange) || !is_numeric($maxRange) ||
+				!is_int($chance) || $chance <= 0
+			) throw new InvalidArgumentException("Invalid range entry. minRange: '{$minRange}', maxRange: '{$maxRange}', and chance: '{$chance}' must be numeric, and 'chance' must be a positive number.");
 		}
 
 		$messages = $config->get('messages', []);
