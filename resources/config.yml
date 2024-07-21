@@ -8,9 +8,15 @@ economy:
 # If you are using the "xp" provider, 1 unit = 1 level of experience.
 min-bet: 1000
 
+# minRange and maxRange must be a string and numeric
+# chance must be an integer
 range:
-  -2.00=0.00: 70
-  0.00=2.00: 40
+  - minRange: '-2.00'
+    maxRange: '0.00'
+    chance: 70
+  - minRange: '0.00'
+    maxRange: '2.00'
+    chance: 40
 
 messages:
   transaction-failed: '§e| §cTransaction failed. Please try again later or contact an admin if the issue persists.'
@@ -20,7 +26,7 @@ messages:
   loss-prize: "§e| §cYou lost. Loss  §c{prize}"
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
-  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{loss}. §fTotal earned §6{prize} §fwith §6{calculation} §fcalculation."
+  broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{earn}. §fTotal earned §6{prize} §fwith §6{calculation} §fcalculation."
 
 forms:
   play:

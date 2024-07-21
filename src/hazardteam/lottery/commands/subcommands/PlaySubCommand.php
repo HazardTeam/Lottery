@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_f19bbc530faaf5ba\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_f19bbc530faaf5ba\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_e1ed3d4b6df7a9b7\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_f19bbc530faaf5ba\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_f19bbc530faaf5ba\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_f19bbc530faaf5ba\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -258,7 +258,9 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$menu->setInventoryCloseListener(function (Player $player) use ($bet, $prize, $calculationMessage, $totalMultiplier) : void {
 			$total = $prize - $bet;
-			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{loss}', '{bet}', '{player}', '{calculation}', '{multiplier}'], [(string) $total, (string) $prize, (string) $bet, $player->getName(), $calculationMessage, (string) $totalMultiplier], Main::getInstance()->getMessage('broadcast-message')));
+			$status = $prize < 0 ? "Loss" : "Win";
+			unset($this->chosen[$player->getName()]);
+			$player->getServer()->broadcastMessage(str_replace(['{prize}', '{earn}', '{bet}', '{player}', '{calculation}', '{multiplier}', '{status}'], [(string) $total, (string) $prize, (string) $bet, $player->getName(), $calculationMessage, (string) $totalMultiplier, $status], Main::getInstance()->getMessage('broadcast-message')));
 
 			if ($prize > $bet) {
 				$player->sendMessage(str_replace('{prize}', (string) $total, Main::getInstance()->getMessage('receive-prize')));
