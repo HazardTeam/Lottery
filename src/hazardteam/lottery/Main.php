@@ -23,6 +23,7 @@ use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use function is_array;
+use function is_int;
 use function is_numeric;
 use function is_string;
 
@@ -104,10 +105,12 @@ class Main extends PluginBase {
 			$maxRange = $value['maxRange'] ?? null;
 			$chance = $value['chance'] ?? null;
 
-			if (!is_string($minRange) || !is_numeric($minRange) ||
-				!is_string($maxRange) || !is_numeric($maxRange) ||
-				!is_int($chance) || $chance <= 0
-			) throw new InvalidArgumentException("Invalid range entry. minRange: '{$minRange}', maxRange: '{$maxRange}', and chance: '{$chance}' must be numeric, and 'chance' must be a positive number.");
+			if (!is_string($minRange) || !is_numeric($minRange)
+				|| !is_string($maxRange) || !is_numeric($maxRange)
+				|| !is_int($chance) || $chance <= 0
+			) {
+				throw new InvalidArgumentException("Invalid range entry. minRange: '{$minRange}', maxRange: '{$maxRange}', and chance: '{$chance}' must be numeric, and 'chance' must be a positive number.");
+			}
 		}
 
 		$messages = $config->get('messages', []);
