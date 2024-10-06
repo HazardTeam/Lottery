@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace hazardteam\lottery\libs\_113f9fff6892dc70\muqsit\invmenu\session\network\handler;
+
+use Closure;
+use hazardteam\lottery\libs\_113f9fff6892dc70\muqsit\invmenu\session\network\NetworkStackLatencyEntry;
+
+interface PlayerNetworkHandler{
+
+	public function createNetworkStackLatencyEntry(Closure $then) : NetworkStackLatencyEntry;
+}
