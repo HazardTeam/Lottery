@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_0c17d53bb9c0bfd9\CortexPE\Commando\PacketHooker;
-use hazardteam\lottery\libs\_0c17d53bb9c0bfd9\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
-use hazardteam\lottery\libs\_0c17d53bb9c0bfd9\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
+use hazardteam\lottery\libs\_9ecf393e343e2c88\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_9ecf393e343e2c88\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_9ecf393e343e2c88\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_0c17d53bb9c0bfd9\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_9ecf393e343e2c88\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
