@@ -841,16 +841,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "5.21.0",
+            "version": "5.21.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "734ca1cc6bf651da097eb03aa1f5b4123252dfaa"
+                "reference": "4a702b97fd282731622f40692921e6f5763a9571"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/734ca1cc6bf651da097eb03aa1f5b4123252dfaa",
-                "reference": "734ca1cc6bf651da097eb03aa1f5b4123252dfaa",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/4a702b97fd282731622f40692921e6f5763a9571",
+                "reference": "4a702b97fd282731622f40692921e6f5763a9571",
                 "shasum": ""
             },
             "require": {
@@ -923,7 +923,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.21.0"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.21.1"
             },
             "funding": [
                 {
@@ -935,7 +935,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2024-11-03T15:29:06+00:00"
+            "time": "2024-11-12T11:48:01+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -3872,16 +3872,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v7.1.6",
+            "version": "v7.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "6aaa189ddb4ff6b5de8fa3210f2fb42c87b4d12e"
+                "reference": "9b8a40b7289767aa7117e957573c2a535efe6585"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/6aaa189ddb4ff6b5de8fa3210f2fb42c87b4d12e",
-                "reference": "6aaa189ddb4ff6b5de8fa3210f2fb42c87b4d12e",
+                "url": "https://api.github.com/repos/symfony/process/zipball/9b8a40b7289767aa7117e957573c2a535efe6585",
+                "reference": "9b8a40b7289767aa7117e957573c2a535efe6585",
                 "shasum": ""
             },
             "require": {
@@ -3913,7 +3913,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v7.1.6"
+                "source": "https://github.com/symfony/process/tree/v7.1.7"
             },
             "funding": [
                 {
@@ -3929,7 +3929,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-25T14:20:29+00:00"
+            "time": "2024-11-06T09:25:12+00:00"
         },
         {
             "name": "symfony/service-contracts",
