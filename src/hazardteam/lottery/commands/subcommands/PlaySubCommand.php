@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_a45c8855bcef24e3\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_a45c8855bcef24e3\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_96d6c7809a382901\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_96d6c7809a382901\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_a45c8855bcef24e3\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_a45c8855bcef24e3\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_a45c8855bcef24e3\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_96d6c7809a382901\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_96d6c7809a382901\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_96d6c7809a382901\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
