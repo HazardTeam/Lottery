@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_b8115fddc8034c8a\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_b8115fddc8034c8a\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_5fbb0d56cc3dc7c9\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_5fbb0d56cc3dc7c9\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_b8115fddc8034c8a\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_b8115fddc8034c8a\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_b8115fddc8034c8a\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_5fbb0d56cc3dc7c9\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_5fbb0d56cc3dc7c9\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_5fbb0d56cc3dc7c9\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -62,7 +62,7 @@ class PlaySubCommand extends BaseSubCommand {
 	/** @var array<string, array<array{color: DyeColor, multiplier: float|int}>> */
 	private array $playerSelections = [];
 
-	/** @var array<string, TaskHandler> */
+	/** @var array<string, TaskHandler<ClosureTask>> */
 	private array $activeTasks = [];
 
 	/** @var array<DyeColor> */
@@ -124,24 +124,20 @@ class PlaySubCommand extends BaseSubCommand {
 					return;
 				}
 
-				$this->processBetAndStartGame($player, $bet, $economy);
+				$economy->takeMoney($player, $bet, function (bool $success) use ($player, $bet) : void {
+					if (!$success) {
+						$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
+						return;
+					}
+
+					$this->startGameWithCountdown($player, $bet);
+				});
 			});
 
 			$form->setTitle($main->getFormTitle('play'));
 			$form->addLabel(str_replace('{money}', (string) $balance, $main->getFormContent('play')));
 			$form->addInput('§6» §fPlace your bet:', (string) $main->getMinBet(), 'bet');
 			$player->sendForm($form);
-		});
-	}
-
-	private function processBetAndStartGame(Player $player, int $bet, $economy) : void {
-		$economy->takeMoney($player, $bet, function (bool $success) use ($player, $bet) : void {
-			if (!$success) {
-				$player->sendMessage(Main::getInstance()->getMessage('transaction-failed'));
-				return;
-			}
-
-			$this->startGameWithCountdown($player, $bet);
 		});
 	}
 
@@ -418,8 +414,8 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->getInventory()->setContents($contents);
 		$this->processLotteryResults($player, $bet, $selections);
 
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $tx) use ($multipliers, $bet) : void {
-			$this->handleRevealClick($tx, $multipliers, $bet);
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $tx) use ($multipliers, $bet, $menu) : void {
+			$this->handleRevealClick($tx, $multipliers, $bet, $menu);
 		}));
 
 		$menu->setInventoryCloseListener(function (Player $player) : void {
@@ -429,7 +425,7 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->send($player);
 	}
 
-	private function handleRevealClick(DeterministicInvMenuTransaction $tx, array $multipliers, int $bet) : void {
+	private function handleRevealClick(DeterministicInvMenuTransaction $tx, array $multipliers, int $bet, InvMenu $menu) : void {
 		$player = $tx->getPlayer();
 		$slot = $tx->getAction()->getSlot();
 		$menu = $tx->getAction()->getInventory();
@@ -463,7 +459,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 			// Show final results when all revealed
 			if (count($this->playerSelections[$player->getName()]) === 0) {
-				$this->showFinalResults($menu, $player, $bet);
+				$this->showFinalResults($player, $bet, $menu);
 			}
 		}
 	}
@@ -489,7 +485,7 @@ class PlaySubCommand extends BaseSubCommand {
 		}
 	}
 
-	private function showFinalResults(InvMenu $menu, Player $player, int $bet) : void {
+	private function showFinalResults(Player $player, int $bet, InvMenu $menu) : void {
 		$selections = $this->playerSelections[$player->getName()] ?? [];
 		$multipliers = array_column($selections, 'multiplier');
 
@@ -508,7 +504,7 @@ class PlaySubCommand extends BaseSubCommand {
 				'§f' . $calculationMsg . ' = §6§l' . $totalMultiplier . 'x',
 				'§7Bet: §e' . $bet . ' §7→ Prize: ' . $color . $prize,
 				'§8' . str_repeat('═', 20),
-				$profit > 0 ? '§a§l🎉 JACKPOT! 🎉' : ($profit === 0 ? '§e§l⚖ BREAK EVEN! ⚖' : '§c§l💔 NEXT TIME! 💔'),
+				$profit > 0 ? '§a§l🎉 JACKPOT! 🎉' : (abs($profit) < 0.01 ? '§e§l⚖ BREAK EVEN! ⚖' : '§c§l💔 NEXT TIME! 💔'),
 			]);
 
 		$menu->getInventory()->setItem(22, $finalItem);
@@ -527,7 +523,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 	private static function broadcastResult(Player $player, int $bet, float $prize, float $profit, string $calculation, float $multiplier) : void {
 		$main = Main::getInstance();
-		$status = $profit > 0 ? 'Win' : ($profit === 0 ? 'Break-even' : 'Loss');
+		$status = $profit > 0 ? 'Win' : (abs($profit) < 0.01 ? 'Break-even' : 'Loss');
 
 		$message = str_replace(
 			['{player}', '{prize}', '{earn}', '{bet}', '{calculation}', '{multiplier}', '{status}'],
@@ -537,7 +533,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$player->getServer()->broadcastMessage($message);
 
-		$resultKey = $profit > 0 ? 'receive-prize' : ($profit === 0 ? 'break-even-prize' : 'loss-prize');
+		$resultKey = $profit > 0 ? 'receive-prize' : (abs($profit) < 0.01 ? 'break-even-prize' : 'loss-prize');
 		$player->sendMessage(str_replace('{prize}', (string) $profit, $main->getMessage($resultKey)));
 	}
 
