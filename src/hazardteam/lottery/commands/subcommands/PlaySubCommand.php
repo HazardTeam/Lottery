@@ -59,7 +59,7 @@ class PlaySubCommand extends BaseSubCommand {
 	/** @var array<int> */
 	private array $innerSlot = [];
 
-	/** @var array<string, array<array{color: DyeColor, multiplier: float|int}>> */
+	/** @var array<string, array<array{color: DyeColor, multiplier: float|int, slot: int}>> */
 	private array $playerSelections = [];
 
 	/** @var array<string, TaskHandler<ClosureTask>> */
@@ -201,8 +201,8 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$this->playerSelections[$player->getName()] = [];
 
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $tx) use ($bet, $table) : void {
-			$this->handleLotteryClick($tx, $bet, $table);
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $tx) use ($bet, $table, $menu) : void {
+			$this->handleLotteryClick($tx, $bet, $table, $menu);
 		}));
 
 		$menu->send($player);
@@ -245,11 +245,10 @@ class PlaySubCommand extends BaseSubCommand {
 		return $contents;
 	}
 
-	private function handleLotteryClick(DeterministicInvMenuTransaction $tx, int $bet, array $table) : void {
+	private function handleLotteryClick(DeterministicInvMenuTransaction $tx, int $bet, array $table, InvMenu $menu) : void {
 		$player = $tx->getPlayer();
 		$slot = $tx->getAction()->getSlot();
 		$playerName = $player->getName();
-		$menu = $tx->getAction()->getInventory();
 
 		if (!isset($this->playerSelections[$playerName])) {
 			$this->playerSelections[$playerName] = [];
@@ -262,6 +261,13 @@ class PlaySubCommand extends BaseSubCommand {
 			$sourceItem = $tx->getAction()->getSourceItem();
 			if (!$sourceItem->getBlock() instanceof Wool) {
 				return;
+			}
+
+			// Prevent re-selection
+			foreach ($this->playerSelections[$playerName] as $selection) {
+				if ($selection['slot'] === $slot) {
+					return;
+				}
 			}
 
 			$wool = $sourceItem->getBlock();
@@ -279,7 +285,7 @@ class PlaySubCommand extends BaseSubCommand {
 				->setCustomName('§a§l✓ CHOSEN')
 				->setLore(['§7This block is locked in!', '§6Awaiting revelation...']);
 
-			$menu->setItem($slot, $selected);
+			$menu->getInventory()->setItem($slot, $selected);
 			$player->getWorld()->addSound($player->getPosition(), new PopSound());
 
 			$newCount = count($this->playerSelections[$playerName]);
@@ -295,7 +301,7 @@ class PlaySubCommand extends BaseSubCommand {
 						'§7Click to discover your fortune!',
 						'§6§oThe moment of truth awaits...',
 					]);
-				$menu->setItem(50, $revealBtn);
+				$menu->getInventory()->setItem(50, $revealBtn);
 
 				$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(15));
 				$player->sendTitle('§a§l🎉 READY! 🎉', '§6Click the star to reveal!', 0, 40, 20);
@@ -428,7 +434,6 @@ class PlaySubCommand extends BaseSubCommand {
 	private function handleRevealClick(DeterministicInvMenuTransaction $tx, array $multipliers, int $bet, InvMenu $menu) : void {
 		$player = $tx->getPlayer();
 		$slot = $tx->getAction()->getSlot();
-		$menu = $tx->getAction()->getInventory();
 
 		if (!isset($multipliers[$slot])) {
 			return;
@@ -446,19 +451,28 @@ class PlaySubCommand extends BaseSubCommand {
 				'§8' . str_repeat('▫', 15),
 			]);
 
-		$menu->setItem($slot, $revealed);
+		$menu->getInventory()->setItem($slot, $revealed);
 
 		$sound = $multiplier > 1 ? new XpLevelUpSound(20) : new XpCollectSound();
 		$player->getWorld()->addSound($player->getPosition(), $sound);
 
-		// Remove from player's selections
 		if (isset($this->playerSelections[$player->getName()])) {
-			$key = $slot - 10;
-			unset($this->playerSelections[$player->getName()][$key]);
-			$this->playerSelections[$player->getName()] = array_values($this->playerSelections[$player->getName()]);
+			$originalSlotIndex = $slot - 10;
+			if (isset($this->playerSelections[$player->getName()][$originalSlotIndex])) {
+				unset($this->playerSelections[$player->getName()][$originalSlotIndex]);
 
-			// Show final results when all revealed
-			if (count($this->playerSelections[$player->getName()]) === 0) {
+				$this->playerSelections[$player->getName()] = array_values($this->playerSelections[$player->getName()]);
+			}
+
+			$revealedCount = 0;
+			foreach (range(10, 14) as $revealSlot) {
+				$item = $menu->getInventory()->getItem($revealSlot);
+				if ($item->getCustomName() === $color . '§l' . $multiplier . 'x MULTIPLIER!') {
+					++$revealedCount;
+				}
+			}
+
+			if ($revealedCount === 5) {
 				$this->showFinalResults($player, $bet, $menu);
 			}
 		}
