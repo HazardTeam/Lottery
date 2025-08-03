@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\CortexPE\Commando\BaseSubCommand;
 use hazardteam\lottery\Main;
 use pocketmine\command\CommandSender;
 

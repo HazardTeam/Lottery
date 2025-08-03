@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_f5f0db04d11d46cc\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_0401bd3b0acafac5\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -460,20 +460,11 @@ class PlaySubCommand extends BaseSubCommand {
 			$originalSlotIndex = $slot - 10;
 			if (isset($this->playerSelections[$player->getName()][$originalSlotIndex])) {
 				unset($this->playerSelections[$player->getName()][$originalSlotIndex]);
-
 				$this->playerSelections[$player->getName()] = array_values($this->playerSelections[$player->getName()]);
-			}
 
-			$revealedCount = 0;
-			foreach (range(10, 14) as $revealSlot) {
-				$item = $menu->getInventory()->getItem($revealSlot);
-				if ($item->getCustomName() === $color . '§l' . $multiplier . 'x MULTIPLIER!') {
-					++$revealedCount;
+				if (count($this->playerSelections[$player->getName()]) === 0) {
+					$this->showFinalResults($player, $bet, $menu);
 				}
-			}
-
-			if ($revealedCount === 5) {
-				$this->showFinalResults($player, $bet, $menu);
 			}
 		}
 	}
