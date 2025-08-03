@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_22bcecf331b7b6cf\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_22bcecf331b7b6cf\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_9e6e8ac2307c4380\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_9e6e8ac2307c4380\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_22bcecf331b7b6cf\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_22bcecf331b7b6cf\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_22bcecf331b7b6cf\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_9e6e8ac2307c4380\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_9e6e8ac2307c4380\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_9e6e8ac2307c4380\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -31,6 +31,7 @@ use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\scheduler\TaskHandler;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\sound\AnvilUseSound;
@@ -66,6 +67,9 @@ class PlaySubCommand extends BaseSubCommand {
 
 	/** @var array<string, int> */
 	private array $selectionProgress = [];
+
+	/** @var array<string, TaskHandler> */
+	private array $playerCountdownTaskHandlers = [];
 
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
 		parent::__construct($plugin, $name, $description, $aliases);
@@ -143,55 +147,78 @@ class PlaySubCommand extends BaseSubCommand {
 	 */
 	private function playLoadingSequence(Player $player, int $bet) : void {
 		$playerName = $player->getName();
+
+		if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+			$this->playerCountdownTaskHandlers[$playerName]->cancel();
+			unset($this->playerCountdownTaskHandlers[$playerName]);
+		}
+
 		$this->playerCountdowns[$playerName] = 3;
 
-		// Play initial sound
 		$player->getNetworkSession()->sendDataPacket(
 			PlaySoundPacket::create('ambient.cave', $player->getPosition()->getX(), $player->getPosition()->getY(), $player->getPosition()->getZ(), 185.0, 1),
 			true
 		);
 
-		// Start countdown with enhanced visuals
-		$countdownTask = new ClosureTask(function () use ($player, $bet, $playerName) : void {
-			if (!$player->isOnline()) {
-				unset($this->playerCountdowns[$playerName]);
-				return;
-			}
+		$taskId = Main::getInstance()->getScheduler()->scheduleRepeatingTask(
+			new ClosureTask(function () use ($player, $bet, $playerName) : void {
+				if (!$player->isOnline()) {
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
 
-			$countdown = $this->playerCountdowns[$playerName];
+					unset($this->playerCountdowns[$playerName]);
+					return;
+				}
 
-			if ($countdown > 0) {
-				// Create animated countdown display
-				$dots = str_repeat('§6●', $countdown) . str_repeat('§8○', 3 - $countdown);
-				$loadingBar = self::createLoadingBar(4 - $countdown, 3);
+				if (!isset($this->playerCountdowns[$playerName])) {
+					Main::getInstance()->getLogger()->error("Error: Player {$playerName} countdown data missing in task, cancelling task. Check for premature unsetting.");
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
 
-				$player->sendTitle(
-					'§6§l' . $countdown,
-					"§fPreparing lottery table...\n" . $loadingBar . "\n" . $dots,
-					0,
-					20,
-					5
-				);
+					return;
+				}
 
-				// Play tick sound
-				$player->getWorld()->addSound($player->getPosition(), new ClickSound());
-				--$this->playerCountdowns[$playerName];
-			} else {
-				$player->sendTitle('§a§lREADY!', '§fSelect your lucky blocks!', 0, 30, 10);
-				$player->getWorld()->addSound($player->getPosition(), new AnvilUseSound());
+				$countdown = $this->playerCountdowns[$playerName];
 
-				// Delay before showing menu for dramatic effect
-				Main::getInstance()->getScheduler()->scheduleDelayedTask(
-					new ClosureTask(function() use ($player, $bet, $playerName) {
-						unset($this->playerCountdowns[$playerName]);
-						$this->showLotteryMenu($player, $bet);
-					}),
-					30 // 1.5 seconds
-				);
-			}
-		});
+				if ($countdown > 0) {
+					$dots = str_repeat('§6●', $countdown) . str_repeat('§8○', 3 - $countdown);
+					$loadingBar = self::createLoadingBar(4 - $countdown, 3);
 
-		Main::getInstance()->getScheduler()->scheduleRepeatingTask($countdownTask, 20); // Every second
+					$player->sendTitle(
+						'§6§l' . $countdown,
+						"§fPreparing lottery table...\n" . $loadingBar . "\n" . $dots,
+						0,
+						20,
+						5
+					);
+
+					$player->getWorld()->addSound($player->getPosition(), new ClickSound());
+					--$this->playerCountdowns[$playerName];
+				} else {
+					$player->sendTitle('§a§lREADY!', '§fSelect your lucky blocks!', 0, 30, 10);
+					$player->getWorld()->addSound($player->getPosition(), new AnvilUseSound());
+
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
+
+					unset($this->playerCountdowns[$playerName]);
+
+					Main::getInstance()->getScheduler()->scheduleDelayedTask(
+						new ClosureTask(fn () => $this->showLotteryMenu($player, $bet)),
+						30
+					);
+				}
+			}),
+			20
+		);
+
+		$this->playerCountdownTaskHandlers[$playerName] = $taskId;
 	}
 
 	/**
@@ -391,59 +418,87 @@ class PlaySubCommand extends BaseSubCommand {
 	 */
 	private function startRevealSequence(Player $player, int $bet) : void {
 		$playerName = $player->getName();
+
+		if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+			$this->playerCountdownTaskHandlers[$playerName]->cancel();
+			unset($this->playerCountdownTaskHandlers[$playerName]);
+		}
+
 		$this->playerCountdowns[$playerName] = 5;
 
 		$player->sendTitle('§e§lPREPARING REVEAL...', '§7The moment of truth approaches...', 0, 30, 10);
 
-		$revealTask = new ClosureTask(function () use ($player, $bet, $playerName) : void {
-			if (!$player->isOnline()) {
-				unset($this->playerCountdowns[$playerName]);
-				return;
-			}
+		$taskHandler = Main::getInstance()->getScheduler()->scheduleRepeatingTask(
+			new ClosureTask(function () use ($player, $bet, $playerName) : void {
+				if (!$player->isOnline()) {
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
 
-			$countdown = $this->playerCountdowns[$playerName];
-
-			if ($countdown > 0) {
-				$suspenseMessage = match ($countdown) {
-					5 => '§7Calculating your destiny...',
-					4 => '§7The gods are deciding...',
-					3 => '§e§lAlmost there...',
-					2 => '§6§lLast chance to hope...',
-					1 => '§c§lHERE WE GO!'
-				};
-
-				$intensity = 6 - $countdown;
-				$dots = str_repeat('§6●', $intensity) . str_repeat('§8○', 5 - $intensity);
-
-				$player->sendTitle(
-					'§6§l' . $countdown,
-					$suspenseMessage . "\n" . $dots,
-					0,
-					20,
-					5
-				);
-
-				// Escalating sound effects
-				if ($countdown <= 2) {
-					$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(5));
-				} else {
-					$player->getWorld()->addSound($player->getPosition(), new ClickSound());
+					unset($this->playerCountdowns[$playerName]); // Clean up state
+					return;
 				}
 
-				--$this->playerCountdowns[$playerName];
-			} else {
-				unset($this->playerCountdowns[$playerName]);
-				$player->sendTitle('§a§l✦ REVEALED! ✦', '§fTime to see your fortune!', 0, 40, 20);
+				if (!isset($this->playerCountdowns[$playerName])) {
+					Main::getInstance()->getLogger()->error("Error: Player {$playerName} reveal countdown data missing in task, cancelling task. This shouldn't happen if player is online and previous unsets were managed correctly.");
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
 
-				// Dramatic pause before showing results
-				Main::getInstance()->getScheduler()->scheduleDelayedTask(
-					new ClosureTask(fn () => $this->revealPrize($player, $bet)),
-					40 // 2 seconds
-				);
-			}
-		});
+					return;
+				}
 
-		Main::getInstance()->getScheduler()->scheduleRepeatingTask($revealTask, 20);
+				$countdown = $this->playerCountdowns[$playerName];
+
+				if ($countdown > 0) {
+					$suspenseMessage = match ($countdown) {
+						5 => '§7Calculating your destiny...',
+						4 => '§7The gods are deciding...',
+						3 => '§e§lAlmost there...',
+						2 => '§6§lLast chance to hope...',
+						1 => '§c§lHERE WE GO!'
+					};
+
+					$intensity = 6 - $countdown;
+					$dots = str_repeat('§6●', $intensity) . str_repeat('§8○', 5 - $intensity);
+
+					$player->sendTitle(
+						'§6§l' . $countdown,
+						$suspenseMessage . "\n" . $dots,
+						0,
+						20,
+						5
+					);
+
+					if ($countdown <= 2) {
+						$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(5));
+					} else {
+						$player->getWorld()->addSound($player->getPosition(), new ClickSound());
+					}
+
+					--$this->playerCountdowns[$playerName];
+				} else {
+					$player->sendTitle('§a§l✦ REVEALED! ✦', '§fTime to see your fortune!', 0, 40, 20);
+
+					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+						$this->playerCountdownTaskHandlers[$playerName]->cancel();
+						unset($this->playerCountdownTaskHandlers[$playerName]);
+					}
+
+					unset($this->playerCountdowns[$playerName]);
+
+					Main::getInstance()->getScheduler()->scheduleDelayedTask(
+						new ClosureTask(fn () => $this->revealPrize($player, $bet)),
+						40
+					);
+				}
+			}),
+			20
+		);
+
+		$this->playerCountdownTaskHandlers[$playerName] = $taskHandler;
 	}
 
 	private function revealPrize(Player $player, int $bet) : void {
