@@ -185,6 +185,7 @@ class PlaySubCommand extends BaseSubCommand {
 					new ClosureTask(function() use ($player, $bet, $playerName) {
 						unset($this->playerCountdowns[$playerName]);
 						$this->showLotteryMenu($player, $bet);
+					}),
 					30 // 1.5 seconds
 				);
 			}
