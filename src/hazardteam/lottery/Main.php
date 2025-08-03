@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2024 HazardTeam
+ * Copyright (c) 2024-2025 HazardTeam
  *
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_14e1dbb8e0ddfaa5\CortexPE\Commando\PacketHooker;
-use hazardteam\lottery\libs\_14e1dbb8e0ddfaa5\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
-use hazardteam\lottery\libs\_14e1dbb8e0ddfaa5\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
+use hazardteam\lottery\libs\_d62ec0d3310b60e3\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_d62ec0d3310b60e3\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_d62ec0d3310b60e3\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_14e1dbb8e0ddfaa5\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_d62ec0d3310b60e3\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -41,7 +41,12 @@ class Main extends PluginBase {
 	private array $messages;
 	/** @var array<string, array<string, string>> */
 	private array $forms;
-	/** @var array<string, array<string, array<string, string>|string>> */
+	/**
+	 * @var array<string, array{
+	 * title: string,
+	 * items: array<string, string>
+	 * }>
+	 */
 	private array $gui;
 
 	private LotteryManager $lotteryManager;
