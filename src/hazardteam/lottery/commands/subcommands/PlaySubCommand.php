@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_231af81575281f7e\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_231af81575281f7e\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_f5f0db04d11d46cc\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_f5f0db04d11d46cc\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_231af81575281f7e\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_231af81575281f7e\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_231af81575281f7e\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_f5f0db04d11d46cc\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_f5f0db04d11d46cc\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_f5f0db04d11d46cc\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -136,7 +136,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 			$form->setTitle($main->getFormTitle('play'));
 			$form->addLabel(str_replace('{money}', (string) $balance, $main->getFormContent('play')));
-			$form->addInput('§6» §fPlace your bet:', (string) $main->getMinBet(), 'bet');
+			$form->addInput('§6» §fPlace your bet:', default: (string) $main->getMinBet(), label: 'bet');
 			$player->sendForm($form);
 		});
 	}
