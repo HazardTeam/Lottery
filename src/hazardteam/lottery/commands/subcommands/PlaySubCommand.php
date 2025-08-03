@@ -182,7 +182,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 				// Delay before showing menu for dramatic effect
 				Main::getInstance()->getScheduler()->scheduleDelayedTask(
-					new ClosureTask(function() use ($player, $bet, $playerName) {
+					new ClosureTask(function () use ($player, $bet, $playerName) : void {
 						unset($this->playerCountdowns[$playerName]);
 						$this->showLotteryMenu($player, $bet);
 					}),
