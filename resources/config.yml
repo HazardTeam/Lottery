@@ -17,12 +17,10 @@ range:
   - minRange: '0.00'
     maxRange: '2.00'
     chance: 40
-  - minRange: '2.01'
-    maxRange: '5.00'
-    chance: 10 # Higher multiplier, lower chance
-  - minRange: '-5.00'
-    maxRange: '-2.01'
-    chance: 5 # Higher loss, very low chance
+
+# Define how the lottery multiplier is calculated.
+# Options: 'max', 'min', 'average', 'product'
+lottery-calculation-method: 'average'
 
 messages:
   transaction-failed: '§e| §cTransaction failed. Please try again later or contact an admin if the issue persists.'
