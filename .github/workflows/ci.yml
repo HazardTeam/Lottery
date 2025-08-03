@@ -12,21 +12,21 @@ jobs:
 
     strategy:
       matrix:
-        image: [ubuntu-20.04]
-        php: [8.2]
+        image: [ubuntu-latest]
+        php: [8.3]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup PHP
-        uses: pmmp/setup-php-action@3.2.0
+        uses: pmmp/setup-php-action@3c38c259834f945351a662392836d90eb08abff0 # 3.2.0
         with:
           php-version: ${{ matrix.php }}
           install-path: "./bin"
           pm-version-major: "5"
 
       - name: Restore Composer package cache
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.cache/composer/files
@@ -36,7 +36,7 @@ jobs:
             composer-v2-cache-
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction
+        run: composer install
 
       - name: Run PHP-CS-Fixer
         run: ./vendor/bin/php-cs-fixer fix --diff --ansi --verbose
@@ -48,7 +48,7 @@ jobs:
           write_changes: true
 
       - name: Run auto commit
-        uses: stefanzweifel/git-auto-commit-action@v6
+        uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v6
         with:
           file_pattern: ./src
 
