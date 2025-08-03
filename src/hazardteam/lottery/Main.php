@@ -41,7 +41,12 @@ class Main extends PluginBase {
 	private array $messages;
 	/** @var array<string, array<string, string>> */
 	private array $forms;
-	/** @var array<string, array<string, array<string, string>|string>> */
+	/**
+	 * @var array<string, array{
+	 * title: string,
+	 * items: array<string, string>
+	 * }>
+	 */
 	private array $gui;
 
 	private LotteryManager $lotteryManager;

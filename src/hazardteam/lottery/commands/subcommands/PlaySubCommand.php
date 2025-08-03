@@ -248,7 +248,7 @@ class PlaySubCommand extends BaseSubCommand {
 			$slot = $transaction->getAction()->getSlot();
 			$sourceItem = $transaction->getAction()->getSourceItem();
 
-			if (isset($multipliers[$slot]) && $slot >= 10 && $slot <= ($count + 9) && !$sourceItem->equals(VanillaItems::PAPER()->asItem())) {
+			if (isset($multipliers[$slot]) && $slot >= 10 && $slot <= ($count + 9) && !$sourceItem->equals(VanillaItems::PAPER())) {
 				$multiplier = $multipliers[$slot];
 
 				if (isset($this->chosen[$playerName])) {
