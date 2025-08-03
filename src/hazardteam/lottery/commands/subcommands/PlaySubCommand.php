@@ -136,7 +136,7 @@ class PlaySubCommand extends BaseSubCommand {
 
 			$form->setTitle($main->getFormTitle('play'));
 			$form->addLabel(str_replace('{money}', (string) $balance, $main->getFormContent('play')));
-			$form->addInput('§6» §fPlace your bet:', (string) $main->getMinBet(), 'bet');
+			$form->addInput('§6» §fPlace your bet:', default: (string) $main->getMinBet(), label: 'bet');
 			$player->sendForm($form);
 		});
 	}
