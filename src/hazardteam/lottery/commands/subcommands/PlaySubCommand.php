@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_83686bfef791a97b\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_83686bfef791a97b\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_22bcecf331b7b6cf\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_22bcecf331b7b6cf\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_83686bfef791a97b\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_83686bfef791a97b\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_83686bfef791a97b\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_22bcecf331b7b6cf\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_22bcecf331b7b6cf\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_22bcecf331b7b6cf\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -177,14 +177,15 @@ class PlaySubCommand extends BaseSubCommand {
 				$player->getWorld()->addSound($player->getPosition(), new ClickSound());
 				--$this->playerCountdowns[$playerName];
 			} else {
-				// Countdown finished, show lottery menu
-				unset($this->playerCountdowns[$playerName]);
 				$player->sendTitle('§a§lREADY!', '§fSelect your lucky blocks!', 0, 30, 10);
 				$player->getWorld()->addSound($player->getPosition(), new AnvilUseSound());
 
 				// Delay before showing menu for dramatic effect
 				Main::getInstance()->getScheduler()->scheduleDelayedTask(
-					new ClosureTask(fn () => $this->showLotteryMenu($player, $bet)),
+					new ClosureTask(function() use ($player, $bet, $playerName) {
+						unset($this->playerCountdowns[$playerName]);
+						$this->showLotteryMenu($player, $bet);
+					}),
 					30 // 1.5 seconds
 				);
 			}
