@@ -27,10 +27,10 @@ class LotteryManager {
 	private array $ranges = [];
 
 	/**
-	 * @param array<int, array{minRange: string, maxRange: string, chance: int}> $range
+	 * @param array<int, array{minRange: string, maxRange: string, chance: int}> $rangeData
 	 */
-	public function __construct(array $range) {
-		foreach ($range as $value) {
+	public function __construct(array $rangeData) {
+		foreach ($rangeData as $value) {
 			$this->ranges[] = new LotteryRange($value['minRange'], $value['maxRange'], $value['chance']);
 		}
 	}
@@ -43,7 +43,7 @@ class LotteryManager {
 			$tables = array_merge($tables, $range->getTable());
 		}
 
-		for ($i = 1; $i < mt_rand(5, 11); ++$i) {
+		for ($i = 0; $i < mt_rand(5, 10); ++$i) {
 			shuffle($tables);
 		}
 

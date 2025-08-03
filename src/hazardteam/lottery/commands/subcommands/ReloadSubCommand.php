@@ -19,10 +19,12 @@ use pocketmine\command\CommandSender;
 
 class ReloadSubCommand extends BaseSubCommand {
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		Main::getInstance()->reload();
+		$mainInstance = Main::getInstance();
+		$mainInstance->reload();
+		$sender->sendMessage($mainInstance->getMessage('reload-success'));
 	}
 
 	protected function prepare() : void {
-		$this->setPermission('lottery.reload');
+		$this->setPermission('lottery.command.reload');
 	}
 }
