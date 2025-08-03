@@ -460,20 +460,11 @@ class PlaySubCommand extends BaseSubCommand {
 			$originalSlotIndex = $slot - 10;
 			if (isset($this->playerSelections[$player->getName()][$originalSlotIndex])) {
 				unset($this->playerSelections[$player->getName()][$originalSlotIndex]);
-
 				$this->playerSelections[$player->getName()] = array_values($this->playerSelections[$player->getName()]);
-			}
 
-			$revealedCount = 0;
-			foreach (range(10, 14) as $revealSlot) {
-				$item = $menu->getInventory()->getItem($revealSlot);
-				if ($item->getCustomName() === $color . '§l' . $multiplier . 'x MULTIPLIER!') {
-					++$revealedCount;
+				if (count($this->playerSelections[$player->getName()]) === 0) {
+					$this->showFinalResults($player, $bet, $menu);
 				}
-			}
-
-			if ($revealedCount === 5) {
-				$this->showFinalResults($player, $bet, $menu);
 			}
 		}
 	}
