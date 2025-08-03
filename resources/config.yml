@@ -17,6 +17,12 @@ range:
   - minRange: '0.00'
     maxRange: '2.00'
     chance: 40
+  - minRange: '2.01'
+    maxRange: '5.00'
+    chance: 10 # Higher multiplier, lower chance
+  - minRange: '-5.00'
+    maxRange: '-2.01'
+    chance: 5 # Higher loss, very low chance
 
 messages:
   transaction-failed: '§e| §cTransaction failed. Please try again later or contact an admin if the issue persists.'
@@ -27,6 +33,8 @@ messages:
   no-enough-money: "§e| §7You do not have enough money to place a bet."
   less-than-min-bet: "§e| §7Your bet is too small."
   broadcast-message: "§7[§6GAMBLING§7] §a{player} §fplaced a bet of §a{bet}. §fWin/Loss §e{earn}. §fTotal earned §6{prize} §fwith §6{calculation} §fcalculation."
+  break-even-prize: "§e| §7You broke even. No loss, no gain."
+  reload-success: "§e| §aLottery plugin reloaded successfully!"
 
 forms:
   play:

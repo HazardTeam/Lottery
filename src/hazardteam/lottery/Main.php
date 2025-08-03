@@ -13,15 +13,17 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_228c0d64c782741d\CortexPE\Commando\PacketHooker;
-use hazardteam\lottery\libs\_228c0d64c782741d\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
-use hazardteam\lottery\libs\_228c0d64c782741d\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
+use hazardteam\lottery\libs\_d0d5c1d965246a19\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_d0d5c1d965246a19\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_d0d5c1d965246a19\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_228c0d64c782741d\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_d0d5c1d965246a19\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use Throwable;
+use function count;
 use function is_array;
 use function is_int;
 use function is_numeric;
@@ -30,15 +32,19 @@ use function is_string;
 class Main extends PluginBase {
 	use SingletonTrait;
 
+	/** @var array<string, mixed> */
 	private array $economyConfig;
 	private int $minBet;
 	/** @var array<int, array{minRange: string, maxRange: string, chance: int}> */
 	private array $range;
+	/** @var array<string, string> */
 	private array $messages;
+	/** @var array<string, array<string, string>> */
 	private array $forms;
+	/** @var array<string, array<string, array<string, string>|string>> */
 	private array $gui;
 
-	private LotteryManager $lottmanager;
+	private LotteryManager $lotteryManager;
 	private EconomyProvider $economyProvider;
 
 	public function onEnable() : void {
@@ -54,23 +60,23 @@ class Main extends PluginBase {
 
 		try {
 			$this->loadConfig();
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			$this->getLogger()->error('An error occurred while loading the configuration: ' . $e->getMessage());
 			throw new DisablePluginException();
 		}
 
-		$this->lottmanager = new LotteryManager($this->range);
+		$this->lotteryManager = new LotteryManager($this->range);
 
 		libPiggyEconomy::init();
 
 		try {
 			$this->economyProvider = libPiggyEconomy::getProvider($this->economyConfig);
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			$this->getLogger()->critical('Failed to get economy provider: ' . $e->getMessage());
 			throw new DisablePluginException();
 		}
 
-		$this->getServer()->getCommandMap()->register('Lottery', new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry']));
+		$this->getServer()->getCommandMap()->register($this->getName(), new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry']));
 	}
 
 	/**
@@ -83,24 +89,30 @@ class Main extends PluginBase {
 		$config = $this->getConfig();
 
 		$economyConfig = $config->get('economy');
-		if (!is_array($economyConfig) || !isset($economyConfig['provider'])) {
-			throw new InvalidArgumentException('Invalid or missing "economy" configuration. Please provide an array with the key "provider".');
+		if (!is_array($economyConfig) || !isset($economyConfig['provider']) || !is_string($economyConfig['provider'])) {
+			throw new InvalidArgumentException('Invalid or missing "economy" configuration. Please provide an array with the key "provider" as a string.');
 		}
 
-		$minBet = $config->get('min-bet', null);
-		if (!is_numeric($minBet) || $minBet <= 0) {
+		$this->economyConfig = $economyConfig;
+
+		$minBet = $config->get('min-bet');
+		if (!is_numeric($minBet) || (int) $minBet <= 0) {
 			throw new InvalidArgumentException("Invalid minimum bet. 'min-bet' must be a positive number.");
 		}
 
-		$minBet = (int) $minBet;
+		$this->minBet = (int) $minBet;
 
 		/** @var array<int, array{minRange: string, maxRange: string, chance: int}> $range */
 		$range = $config->get('range', []);
-		if (!is_array($range)) {
-			throw new InvalidArgumentException("Invalid range settings. 'range' must be an array.");
+		if (!is_array($range) || count($range) === 0) {
+			throw new InvalidArgumentException("Invalid range settings. 'range' must be a non-empty array.");
 		}
 
-		foreach ($range as $value) {
+		foreach ($range as $index => $value) {
+			if (!is_array($value)) {
+				throw new InvalidArgumentException("Invalid range entry at index {$index}. Each entry must be an array.");
+			}
+
 			$minRange = $value['minRange'] ?? null;
 			$maxRange = $value['maxRange'] ?? null;
 			$chance = $value['chance'] ?? null;
@@ -109,9 +121,11 @@ class Main extends PluginBase {
 				|| !is_string($maxRange) || !is_numeric($maxRange)
 				|| !is_int($chance) || $chance <= 0
 			) {
-				throw new InvalidArgumentException("Invalid range entry. minRange: '{$minRange}', maxRange: '{$maxRange}', and chance: '{$chance}' must be numeric, and 'chance' must be a positive number.");
+				throw new InvalidArgumentException("Invalid range entry at index {$index}. 'minRange' and 'maxRange' must be numeric strings, and 'chance' must be a positive integer.");
 			}
 		}
+
+		$this->range = $range;
 
 		$messages = $config->get('messages', []);
 		if (!is_array($messages)) {
@@ -120,13 +134,15 @@ class Main extends PluginBase {
 
 		$requiredMessages = [
 			'transaction-failed', 'invalid-bet', 'receive-prize', 'receive-less-prize', 'loss-prize',
-			'no-enough-money', 'less-than-min-bet', 'broadcast-message',
+			'no-enough-money', 'less-than-min-bet', 'broadcast-message', 'break-even-prize', 'reload-success',
 		];
-		foreach ($requiredMessages as $message) {
-			if (!isset($messages[$message]) || !is_string($messages[$message])) {
-				throw new InvalidArgumentException("Missing or invalid message for '{$message}'.");
+		foreach ($requiredMessages as $messageKey) {
+			if (!isset($messages[$messageKey]) || !is_string($messages[$messageKey])) {
+				throw new InvalidArgumentException("Missing or invalid message for '{$messageKey}'.");
 			}
 		}
+
+		$this->messages = $messages;
 
 		$forms = $config->get('forms', []);
 		if (!is_array($forms)) {
@@ -145,6 +161,8 @@ class Main extends PluginBase {
 		if (!isset($playForm['content']) || !is_string($playForm['content'])) {
 			throw new InvalidArgumentException("Invalid form 'play'. 'content' must be provided and must be a string.");
 		}
+
+		$this->forms = $forms;
 
 		$gui = $config->get('gui', []);
 		if (!is_array($gui)) {
@@ -191,21 +209,24 @@ class Main extends PluginBase {
 			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'reveal-result' item must be provided and must be a string.");
 		}
 
-		$this->economyConfig = $economyConfig;
-		$this->minBet = $minBet;
-		$this->range = $range;
-		$this->messages = $messages;
-		$this->forms = $forms;
 		$this->gui = $gui;
 	}
 
 	public function reload() : void {
 		$this->getConfig()->reload();
-		$this->lottmanager = new LotteryManager($this->range);
+		try {
+			$this->loadConfig();
+		} catch (Throwable $e) {
+			$this->getLogger()->error('An error occurred while reloading the configuration: ' . $e->getMessage());
+
+			throw new DisablePluginException();
+		}
+
+		$this->lotteryManager = new LotteryManager($this->range);
 	}
 
 	public function getLotteryManager() : LotteryManager {
-		return $this->lottmanager;
+		return $this->lotteryManager;
 	}
 
 	public function getEconomyProvider() : EconomyProvider {
@@ -216,6 +237,9 @@ class Main extends PluginBase {
 		return $this->minBet;
 	}
 
+	/**
+	 * @return array<int, array{minRange: string, maxRange: string, chance: int}>
+	 */
 	public function getRange() : array {
 		return $this->range;
 	}

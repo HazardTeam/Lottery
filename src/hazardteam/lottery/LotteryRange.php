@@ -21,9 +21,9 @@ use function strlen;
 
 class LotteryRange {
 	public function __construct(
-		private string $startRange,
-		private string $endRange,
-		private int $chance
+		private readonly string $startRange,
+		private readonly string $endRange,
+		private readonly int $chance
 	) {}
 
 	public function getStartRange() : string {
@@ -39,22 +39,32 @@ class LotteryRange {
 	}
 
 	/**
+	 * Generates a table of random float values within the specified range,
+	 * repeated 'chance' number of times.
+	 *
 	 * @return array<float>
 	 */
 	public function getTable() : array {
 		$table = [];
-		$startRange = explode('.', $this->startRange);
-		$endRange = explode('.', $this->endRange);
+		$startParts = explode('.', $this->startRange);
+		$endParts = explode('.', $this->endRange);
 
 		$afterComma = 0;
-		if (count($startRange) === 2 && count($endRange) === 2) {
-			$afterComma = max(strlen($startRange[1]), strlen($endRange[1]));
+		if (count($startParts) === 2 && count($endParts) === 2) {
+			$afterComma = max(strlen($startParts[1]), strlen($endParts[1]));
 		}
 
-		$afterComma = 10 ** $afterComma;
+		$precisionFactor = 10 ** $afterComma;
+
+		$minVal = (int) ((float) $this->startRange * $precisionFactor);
+		$maxVal = (int) ((float) $this->endRange * $precisionFactor);
+
+		if ($minVal > $maxVal) {
+			[$minVal, $maxVal] = [$maxVal, $minVal];
+		}
 
 		for ($i = 1; $i <= $this->chance; ++$i) {
-			$table[] = mt_rand((int) ((float) $this->startRange * $afterComma), (int) ((float) $this->endRange * $afterComma)) / $afterComma;
+			$table[] = mt_rand($minVal, $maxVal) / $precisionFactor;
 		}
 
 		return $table;
