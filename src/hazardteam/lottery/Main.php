@@ -24,6 +24,8 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use Throwable;
 use function count;
+use function implode;
+use function in_array;
 use function is_array;
 use function is_int;
 use function is_numeric;
@@ -48,6 +50,7 @@ class Main extends PluginBase {
 	 * }>
 	 */
 	private array $gui;
+	private string $lotteryCalculationMethod;
 
 	private LotteryManager $lotteryManager;
 	private EconomyProvider $economyProvider;
@@ -131,6 +134,14 @@ class Main extends PluginBase {
 		}
 
 		$this->range = $range;
+
+		$lotteryCalculationMethod = $config->get('lottery-calculation-method', 'max');
+		$validCalculationMethods = ['max', 'min', 'average', 'product'];
+		if (!is_string($lotteryCalculationMethod) || !in_array($lotteryCalculationMethod, $validCalculationMethods, true)) {
+			throw new InvalidArgumentException("Invalid 'lottery-calculation-method'. Must be one of: " . implode(', ', $validCalculationMethods) . '.');
+		}
+
+		$this->lotteryCalculationMethod = $lotteryCalculationMethod;
 
 		$messages = $config->get('messages', []);
 		if (!is_array($messages)) {
@@ -267,5 +278,9 @@ class Main extends PluginBase {
 
 	public function getGuiItem(string $guiType, string $item) : string {
 		return $this->gui[$guiType]['items'][$item] ?? '';
+	}
+
+	public function getLotteryCalculationMethod() : string {
+		return $this->lotteryCalculationMethod;
 	}
 }
