@@ -212,16 +212,16 @@
         },
         {
             "name": "muqsit/invmenu",
-            "version": "4.7.0",
+            "version": "4.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Muqsit/InvMenu.git",
-                "reference": "162ac5635472a486b20ac6cdc906c127807ca052"
+                "reference": "d2dc7f2219fb5306416c144d4a774883efa82da7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Muqsit/InvMenu/zipball/162ac5635472a486b20ac6cdc906c127807ca052",
-                "reference": "162ac5635472a486b20ac6cdc906c127807ca052",
+                "url": "https://api.github.com/repos/Muqsit/InvMenu/zipball/d2dc7f2219fb5306416c144d4a774883efa82da7",
+                "reference": "d2dc7f2219fb5306416c144d4a774883efa82da7",
                 "shasum": ""
             },
             "require": {
@@ -252,9 +252,9 @@
             "description": "A PocketMine-MP virion to create and manage virtual inventories!",
             "support": {
                 "issues": "https://github.com/Muqsit/InvMenu/issues",
-                "source": "https://github.com/Muqsit/InvMenu/tree/4.7.0"
+                "source": "https://github.com/Muqsit/InvMenu/tree/4.7.3"
             },
-            "time": "2025-06-28T16:24:16+00:00"
+            "time": "2025-08-21T06:08:23+00:00"
         },
         {
             "name": "muqsit/simple-packet-handler",
