@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery;
 
-use hazardteam\lottery\libs\_1652aba140c705eb\CortexPE\Commando\PacketHooker;
-use hazardteam\lottery\libs\_1652aba140c705eb\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
-use hazardteam\lottery\libs\_1652aba140c705eb\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\CortexPE\Commando\PacketHooker;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\DaPigGuy\libPiggyEconomy\libPiggyEconomy;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\DaPigGuy\libPiggyEconomy\providers\EconomyProvider;
 use hazardteam\lottery\commands\LotteryCommand;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_1652aba140c705eb\muqsit\invmenu\InvMenuHandler;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\muqsit\invmenu\InvMenuHandler;
 use pocketmine\plugin\DisablePluginException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -34,30 +34,47 @@ use function is_string;
 class Main extends PluginBase {
 	use SingletonTrait;
 
+	private const VALID_CALCULATION_METHODS = ['max', 'min', 'average', 'product'];
+	private const REQUIRED_MESSAGES = [
+		'transaction-failed',
+		'invalid-bet',
+		'receive-prize',
+		'receive-less-prize',
+		'loss-prize',
+		'no-enough-money',
+		'less-than-min-bet',
+		'broadcast-message',
+		'break-even-prize',
+		'reload-success',
+	];
+
 	/** @var array<string, mixed> */
-	private array $economyConfig;
-	private int $minBet;
+	private array $economyConfig = [];
+
+	private int $minBet = 0;
+
 	/** @var array<int, array{minRange: string, maxRange: string, chance: int}> */
-	private array $range;
+	private array $range = [];
+
 	/** @var array<string, string> */
-	private array $messages;
+	private array $messages = [];
+
 	/** @var array<string, array<string, string>> */
-	private array $forms;
-	/**
-	 * @var array<string, array{
-	 * title: string,
-	 * items: array<string, string>
-	 * }>
-	 */
-	private array $gui;
-	private string $lotteryCalculationMethod;
+	private array $forms = [];
+
+	/** @var array<string, array{title: string, items: array<string, string>}> */
+	private array $gui = [];
+
+	private string $lotteryCalculationMethod = 'max';
 
 	private LotteryManager $lotteryManager;
 	private EconomyProvider $economyProvider;
 
-	public function onEnable() : void {
+	protected function onLoad() : void {
 		self::setInstance($this);
+	}
 
+	protected function onEnable() : void {
 		if (!InvMenuHandler::isRegistered()) {
 			InvMenuHandler::register($this);
 		}
@@ -84,12 +101,14 @@ class Main extends PluginBase {
 			throw new DisablePluginException();
 		}
 
-		$this->getServer()->getCommandMap()->register($this->getName(), new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry']));
+		$this->getServer()->getCommandMap()->register(
+			$this->getName(),
+			new LotteryCommand($this, 'lottery', 'Try your hand at the Lottery and win big prizes!', ['ltry'])
+		);
 	}
 
 	/**
 	 * Loads and validates the plugin configuration from the `config.yml` file.
-	 * If the configuration is invalid, an exception will be thrown.
 	 *
 	 * @throws InvalidArgumentException when the configuration is invalid
 	 */
@@ -110,7 +129,6 @@ class Main extends PluginBase {
 
 		$this->minBet = (int) $minBet;
 
-		/** @var array<int, array{minRange: string, maxRange: string, chance: int}> $range */
 		$range = $config->get('range', []);
 		if (!is_array($range) || count($range) === 0) {
 			throw new InvalidArgumentException("Invalid range settings. 'range' must be a non-empty array.");
@@ -129,16 +147,20 @@ class Main extends PluginBase {
 				|| !is_string($maxRange) || !is_numeric($maxRange)
 				|| !is_int($chance) || $chance <= 0
 			) {
-				throw new InvalidArgumentException("Invalid range entry at index {$index}. 'minRange' and 'maxRange' must be numeric strings, and 'chance' must be a positive integer.");
+				throw new InvalidArgumentException(
+					"Invalid range entry at index {$index}. 'minRange' and 'maxRange' must be numeric strings, and 'chance' must be a positive integer."
+				);
 			}
 		}
 
+		/** @var array<int, array{minRange: string, maxRange: string, chance: int}> $range */
 		$this->range = $range;
 
 		$lotteryCalculationMethod = $config->get('lottery-calculation-method', 'max');
-		$validCalculationMethods = ['max', 'min', 'average', 'product'];
-		if (!is_string($lotteryCalculationMethod) || !in_array($lotteryCalculationMethod, $validCalculationMethods, true)) {
-			throw new InvalidArgumentException("Invalid 'lottery-calculation-method'. Must be one of: " . implode(', ', $validCalculationMethods) . '.');
+		if (!is_string($lotteryCalculationMethod) || !in_array($lotteryCalculationMethod, self::VALID_CALCULATION_METHODS, true)) {
+			throw new InvalidArgumentException(
+				"Invalid 'lottery-calculation-method'. Must be one of: " . implode(', ', self::VALID_CALCULATION_METHODS) . '.'
+			);
 		}
 
 		$this->lotteryCalculationMethod = $lotteryCalculationMethod;
@@ -148,16 +170,13 @@ class Main extends PluginBase {
 			throw new InvalidArgumentException("Invalid messages settings. 'messages' must be an array.");
 		}
 
-		$requiredMessages = [
-			'transaction-failed', 'invalid-bet', 'receive-prize', 'receive-less-prize', 'loss-prize',
-			'no-enough-money', 'less-than-min-bet', 'broadcast-message', 'break-even-prize', 'reload-success',
-		];
-		foreach ($requiredMessages as $messageKey) {
+		foreach (self::REQUIRED_MESSAGES as $messageKey) {
 			if (!isset($messages[$messageKey]) || !is_string($messages[$messageKey])) {
 				throw new InvalidArgumentException("Missing or invalid message for '{$messageKey}'.");
 			}
 		}
 
+		/** @var array<string, string> $messages */
 		$this->messages = $messages;
 
 		$forms = $config->get('forms', []);
@@ -178,6 +197,7 @@ class Main extends PluginBase {
 			throw new InvalidArgumentException("Invalid form 'play'. 'content' must be provided and must be a string.");
 		}
 
+		/** @var array<string, array<string, string>> $forms */
 		$this->forms = $forms;
 
 		$gui = $config->get('gui', []);
@@ -185,56 +205,53 @@ class Main extends PluginBase {
 			throw new InvalidArgumentException("Invalid GUI settings. 'gui' must be an array.");
 		}
 
-		$lotteryGui = $gui['lottery'] ?? null;
-		if (!is_array($lotteryGui)) {
-			throw new InvalidArgumentException("Invalid GUI 'lottery'. Must be an array.");
-		}
+		self::validateGuiSection($gui, 'lottery', ['reveal', 'bet-info']);
+		self::validateGuiSection($gui, 'reveal', ['reveal-result']);
 
-		if (!isset($lotteryGui['title']) || !is_string($lotteryGui['title'])) {
-			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'title' must be provided and must be a string.");
-		}
-
-		$lotteryItems = $lotteryGui['items'] ?? null;
-		if (!is_array($lotteryItems)) {
-			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'items' must be an array.");
-		}
-
-		if (!isset($lotteryItems['reveal']) || !is_string($lotteryItems['reveal'])) {
-			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'reveal' item must be provided and must be a string.");
-		}
-
-		if (!isset($lotteryItems['bet-info']) || !is_string($lotteryItems['bet-info'])) {
-			throw new InvalidArgumentException("Invalid GUI 'lottery'. 'bet-info' item must be provided and must be a string.");
-		}
-
-		$revealGui = $gui['reveal'] ?? null;
-		if (!is_array($revealGui)) {
-			throw new InvalidArgumentException("Invalid GUI 'reveal'. Must be an array.");
-		}
-
-		if (!isset($revealGui['title']) || !is_string($revealGui['title'])) {
-			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'title' must be provided and must be a string.");
-		}
-
-		$revealItems = $revealGui['items'] ?? null;
-		if (!is_array($revealItems)) {
-			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'items' must be an array.");
-		}
-
-		if (!isset($revealItems['reveal-result']) || !is_string($revealItems['reveal-result'])) {
-			throw new InvalidArgumentException("Invalid GUI 'reveal'. 'reveal-result' item must be provided and must be a string.");
-		}
-
+		/** @var array<string, array{title: string, items: array<string, string>}> $gui */
 		$this->gui = $gui;
 	}
 
+	/**
+	 * @param array<mixed> $gui
+	 * @param list<string> $requiredItems
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	private static function validateGuiSection(array $gui, string $section, array $requiredItems) : void {
+		$guiSection = $gui[$section] ?? null;
+		if (!is_array($guiSection)) {
+			throw new InvalidArgumentException("Invalid GUI '{$section}'. Must be an array.");
+		}
+
+		if (!isset($guiSection['title']) || !is_string($guiSection['title'])) {
+			throw new InvalidArgumentException("Invalid GUI '{$section}'. 'title' must be provided and must be a string.");
+		}
+
+		$items = $guiSection['items'] ?? null;
+		if (!is_array($items)) {
+			throw new InvalidArgumentException("Invalid GUI '{$section}'. 'items' must be an array.");
+		}
+
+		foreach ($requiredItems as $item) {
+			if (!isset($items[$item]) || !is_string($items[$item])) {
+				throw new InvalidArgumentException("Invalid GUI '{$section}'. '{$item}' item must be provided and must be a string.");
+			}
+		}
+	}
+
+	/**
+	 * Reload plugin configuration.
+	 *
+	 * @throws DisablePluginException
+	 */
 	public function reload() : void {
 		$this->getConfig()->reload();
+
 		try {
 			$this->loadConfig();
 		} catch (Throwable $e) {
 			$this->getLogger()->error('An error occurred while reloading the configuration: ' . $e->getMessage());
-
 			throw new DisablePluginException();
 		}
 

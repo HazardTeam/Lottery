@@ -13,19 +13,20 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_1652aba140c705eb\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_1652aba140c705eb\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_1652aba140c705eb\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_1652aba140c705eb\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_1652aba140c705eb\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_16d35adbbb7804c1\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
 use pocketmine\command\CommandSender;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
+use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
@@ -48,6 +49,7 @@ use function array_values;
 use function count;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_numeric;
 use function max;
 use function min;
@@ -55,11 +57,11 @@ use function range;
 use function str_repeat;
 use function str_replace;
 
-class PlaySubCommand extends BaseSubCommand {
-	/** @var array<int> */
+final class PlaySubCommand extends BaseSubCommand {
+	/** @var array<int, int> */
 	private array $innerSlot = [];
 
-	/** @var array<string, array<array{color: DyeColor, multiplier: float|int}>> */
+	/** @var array<string, list<array{color: DyeColor, multiplier: float}>> */
 	private array $chosen = [];
 
 	/** @var array<string, int> */
@@ -100,8 +102,8 @@ class PlaySubCommand extends BaseSubCommand {
 		$economyProvider = $mainInstance->getEconomyProvider();
 
 		$economyProvider->getMoney($player, function (float|int $amount) use ($mainInstance, $economyProvider, $player) : void {
-			$form = new CustomForm(function (Player $player, ?array $data) use ($mainInstance, $economyProvider, $amount) : void {
-				if ($data === null) {
+			$form = new CustomForm(function (Player $player, mixed $data) use ($mainInstance, $economyProvider, $amount) : void {
+				if (!is_array($data)) {
 					return;
 				}
 
@@ -130,29 +132,21 @@ class PlaySubCommand extends BaseSubCommand {
 						return;
 					}
 
-					// Enhanced loading sequence with sound and visual feedback
 					$this->playLoadingSequence($player, $bet);
 				});
 			});
 
 			$form->setTitle($mainInstance->getFormTitle('play'));
 			$form->addLabel(str_replace('{money}', (string) $amount, $mainInstance->getFormContent('play')));
-			$form->addInput('§6» §fPlace your bet:', default: (string) ($mainInstance->getMinBet()), label: 'bet');
+			$form->addInput('§6» §fPlace your bet:', default: (string) $mainInstance->getMinBet(), label: 'bet');
 			$player->sendForm($form);
 		});
 	}
 
-	/**
-	 * Enhanced loading sequence with visual and audio feedback.
-	 */
 	private function playLoadingSequence(Player $player, int $bet) : void {
 		$playerName = $player->getName();
 
-		if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-			$this->playerCountdownTaskHandlers[$playerName]->cancel();
-			unset($this->playerCountdownTaskHandlers[$playerName]);
-		}
-
+		$this->cancelExistingTask($playerName);
 		$this->playerCountdowns[$playerName] = 3;
 
 		$player->getNetworkSession()->sendDataPacket(
@@ -163,22 +157,13 @@ class PlaySubCommand extends BaseSubCommand {
 		$taskId = Main::getInstance()->getScheduler()->scheduleRepeatingTask(
 			new ClosureTask(function () use ($player, $bet, $playerName) : void {
 				if (!$player->isOnline()) {
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
-					unset($this->playerCountdowns[$playerName]);
+					$this->cleanupPlayerTask($playerName);
 					return;
 				}
 
 				if (!isset($this->playerCountdowns[$playerName])) {
-					Main::getInstance()->getLogger()->error("Error: Player {$playerName} countdown data missing in task, cancelling task. Check for premature unsetting.");
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
+					Main::getInstance()->getLogger()->error("Error: Player {$playerName} countdown data missing in task");
+					$this->cleanupPlayerTask($playerName);
 					return;
 				}
 
@@ -202,12 +187,7 @@ class PlaySubCommand extends BaseSubCommand {
 					$player->sendTitle('§a§lREADY!', '§fSelect your lucky blocks!', 0, 30, 10);
 					$player->getWorld()->addSound($player->getPosition(), new AnvilUseSound());
 
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
-					unset($this->playerCountdowns[$playerName]);
+					$this->cleanupPlayerTask($playerName);
 
 					Main::getInstance()->getScheduler()->scheduleDelayedTask(
 						new ClosureTask(fn () => $this->showLotteryMenu($player, $bet)),
@@ -221,9 +201,18 @@ class PlaySubCommand extends BaseSubCommand {
 		$this->playerCountdownTaskHandlers[$playerName] = $taskId;
 	}
 
-	/**
-	 * Create a visual loading bar.
-	 */
+	private function cancelExistingTask(string $playerName) : void {
+		if (isset($this->playerCountdownTaskHandlers[$playerName])) {
+			$this->playerCountdownTaskHandlers[$playerName]->cancel();
+			unset($this->playerCountdownTaskHandlers[$playerName]);
+		}
+	}
+
+	private function cleanupPlayerTask(string $playerName) : void {
+		$this->cancelExistingTask($playerName);
+		unset($this->playerCountdowns[$playerName]);
+	}
+
 	private static function createLoadingBar(int $progress, int $total) : string {
 		$filled = (int) (($progress / $total) * 20);
 		$empty = 20 - $filled;
@@ -231,31 +220,21 @@ class PlaySubCommand extends BaseSubCommand {
 		return '§8[§a' . str_repeat('■', $filled) . '§7' . str_repeat('□', $empty) . '§8]';
 	}
 
-	/**
-	 * Create a selection progress bar.
-	 */
 	private static function createSelectionProgress(int $selected, int $total = 5) : string {
 		$progressBar = '§8[';
 		for ($i = 0; $i < $total; ++$i) {
-			if ($i < $selected) {
-				$progressBar .= '§a■';
-			} else {
-				$progressBar .= '§7□';
-			}
+			$progressBar .= $i < $selected ? '§a■' : '§7□';
 		}
 
-		$progressBar .= "§8] §f{$selected}/{$total}";
-
-		return $progressBar;
+		return $progressBar . "§8] §f{$selected}/{$total}";
 	}
 
 	/**
-	 * Enhanced wool block creation with tooltips.
+	 * @param array<float> $table
 	 */
-	private static function createEnhancedWoolBlock(DyeColor $color, int $slot, array $table) : \pocketmine\item\Item {
+	private static function createEnhancedWoolBlock(DyeColor $color, int $slot, array $table) : Item {
 		$wool = VanillaBlocks::WOOL()->setColor($color)->asItem();
 
-		// Add mystical lore to create anticipation
 		$lore = [
 			'§7§oClick to select this block',
 			'§8§o"Fortune favors the bold..."',
@@ -272,7 +251,6 @@ class PlaySubCommand extends BaseSubCommand {
 		$colors = [DyeColor::RED(), DyeColor::GREEN(), DyeColor::CYAN(), DyeColor::ORANGE(), DyeColor::LIGHT_BLUE(), DyeColor::LIME()];
 		$contents = [];
 
-		// Initialize selection progress
 		$this->selectionProgress[$player->getName()] = 0;
 
 		foreach (range(0, 53) as $i) {
@@ -304,68 +282,69 @@ class PlaySubCommand extends BaseSubCommand {
 		$menu->setName($mainInstance->getGuiTitle('lottery'));
 		$menu->getInventory()->setContents($contents);
 		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $table) : void {
-			$inventory = $menu->getInventory();
-			$slot = $transaction->getAction()->getSlot();
-			$player = $transaction->getPlayer();
-			$playerName = $player->getName();
-			$chosenWool = $transaction->getAction()->getSourceItem()->getBlock();
-
-			if (!isset($this->chosen[$playerName])) {
-				$this->chosen[$playerName] = [];
-			}
-
-			if (in_array($slot, $this->innerSlot, true) && count($this->chosen[$playerName]) < 5) {
-				if (!$chosenWool instanceof Wool) {
-					return;
-				}
-
-				$this->chosen[$playerName][] = ['color' => $chosenWool->getColor(), 'multiplier' => $table[array_search($slot, $this->innerSlot, true)]];
-
-				// Enhanced selection visual with enchantment effect
-				$selectedBlock = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($chosenWool->getColor())->asItem()
-					->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
-					->setCustomName('§a§l✓ SELECTED')
-					->setLore([
-						'§7This block has been chosen',
-						'§6Awaiting revelation...',
-						'§8' . str_repeat('★', 20),
-					]);
-
-				$inventory->setItem($slot, $selectedBlock);
-				$player->getWorld()->addSound($player->getPosition(), new PopSound());
-
-				// Update selection progress
-				$this->selectionProgress[$playerName] = count($this->chosen[$playerName]);
-				$this->updateSelectionProgress($player);
-
-				// Special effects when 5 blocks are selected
-				if (count($this->chosen[$playerName]) === 5) {
-					self::onAllBlocksSelected($player, $menu, $inventory);
-				}
-			}
-
-			if ($slot === 50) {
-				if (count($this->chosen[$playerName]) === 5) {
-					$this->startRevealSequence($player, $bet);
-					$player->removeCurrentWindow();
-				} else {
-					// Play error sound and show message
-					$player->getWorld()->addSound($player->getPosition(), new ClickSound());
-					$remaining = 5 - count($this->chosen[$playerName]);
-					$player->sendMessage("§c§l! §r§cYou need to select §e{$remaining} §cmore blocks before revealing!");
-				}
-			}
+			$this->handleLotterySelection($transaction, $menu, $bet, $table);
 		}));
 
 		$menu->send($player);
-
-		// Send initial progress
 		$this->updateSelectionProgress($player);
 	}
 
 	/**
-	 * Update selection progress display.
+	 * @param array<float> $table
 	 */
+	private function handleLotterySelection(DeterministicInvMenuTransaction $transaction, InvMenu $menu, int $bet, array $table) : void {
+		$inventory = $menu->getInventory();
+		$slot = $transaction->getAction()->getSlot();
+		$player = $transaction->getPlayer();
+		$playerName = $player->getName();
+		$chosenWool = $transaction->getAction()->getSourceItem()->getBlock();
+
+		if (!isset($this->chosen[$playerName])) {
+			$this->chosen[$playerName] = [];
+		}
+
+		if (in_array($slot, $this->innerSlot, true) && count($this->chosen[$playerName]) < 5) {
+			if (!$chosenWool instanceof Wool) {
+				return;
+			}
+
+			$slotIndex = array_search($slot, $this->innerSlot, true);
+			if ($slotIndex === false) {
+				return;
+			}
+
+			$this->chosen[$playerName][] = ['color' => $chosenWool->getColor(), 'multiplier' => $table[$slotIndex]];
+
+			$selectedBlock = VanillaBlocks::GLAZED_TERRACOTTA()->setColor($chosenWool->getColor())->asItem()
+				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
+				->setCustomName('§a§l✓ SELECTED')
+				->setLore([
+					'§7This block has been chosen',
+					'§6Awaiting revelation...',
+					'§8' . str_repeat('★', 20),
+				]);
+
+			$inventory->setItem($slot, $selectedBlock);
+			$player->getWorld()->addSound($player->getPosition(), new PopSound());
+
+			$this->selectionProgress[$playerName] = count($this->chosen[$playerName]);
+			$this->updateSelectionProgress($player);
+
+			if (count($this->chosen[$playerName]) === 5) {
+				self::onAllBlocksSelected($player, $menu, $inventory);
+			}
+		}
+
+		if ($slot === 50 && count($this->chosen[$playerName]) === 5) {
+			$this->startRevealSequence($player, $bet);
+			$player->removeCurrentWindow();
+		} elseif ($slot === 50) {
+			$player->getWorld()->addSound($player->getPosition(), new ClickSound());
+			$remaining = 5 - count($this->chosen[$playerName]);
+			$player->sendMessage("§c§l! §r§cYou need to select §e{$remaining} §cmore blocks before revealing!");
+		}
+	}
+
 	private function updateSelectionProgress(Player $player) : void {
 		$selected = $this->selectionProgress[$player->getName()] ?? 0;
 		$progressBar = self::createSelectionProgress($selected);
@@ -376,17 +355,14 @@ class PlaySubCommand extends BaseSubCommand {
 			2 => '§e3 blocks remaining!',
 			3 => '§a2 blocks left! Almost there!',
 			4 => '§a§lLast block! Make it count!',
-			5 => '§6§lAll selected! Click the gold ingot!'
+			5 => '§6§lAll selected! Click the gold ingot!',
+			default => '§7Select your blocks'
 		};
 
 		$player->sendActionBarMessage($progressBar . ' §8| §f' . $statusMessage);
 	}
 
-	/**
-	 * Special effects when all blocks are selected.
-	 */
 	private static function onAllBlocksSelected(Player $player, InvMenu $menu, \pocketmine\inventory\Inventory $inventory) : void {
-		// Transform vine blocks to indicate readiness
 		foreach (range(0, 53) as $inventorySlot) {
 			if ($inventory->getItem($inventorySlot)->equals(VanillaBlocks::VINES()->asItem())) {
 				$readyBlock = VanillaBlocks::WEEPING_VINES()->asItem()
@@ -396,7 +372,6 @@ class PlaySubCommand extends BaseSubCommand {
 			}
 		}
 
-		// Update reveal button
 		$revealButton = VanillaItems::GOLD_INGOT()
 			->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
 			->setCustomName('§6§l⚡ REVEAL YOUR FORTUNE! ⚡')
@@ -408,22 +383,14 @@ class PlaySubCommand extends BaseSubCommand {
 			]);
 		$inventory->setItem(50, $revealButton);
 
-		// Play success sound and show celebration message
 		$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(10));
 		$player->sendTitle('§a§lALL SELECTED!', '§6Click the gold ingot to reveal!', 0, 40, 20);
 	}
 
-	/**
-	 * Start the reveal sequence with countdown and suspense.
-	 */
 	private function startRevealSequence(Player $player, int $bet) : void {
 		$playerName = $player->getName();
 
-		if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-			$this->playerCountdownTaskHandlers[$playerName]->cancel();
-			unset($this->playerCountdownTaskHandlers[$playerName]);
-		}
-
+		$this->cancelExistingTask($playerName);
 		$this->playerCountdowns[$playerName] = 5;
 
 		$player->sendTitle('§e§lPREPARING REVEAL...', '§7The moment of truth approaches...', 0, 30, 10);
@@ -431,22 +398,13 @@ class PlaySubCommand extends BaseSubCommand {
 		$taskHandler = Main::getInstance()->getScheduler()->scheduleRepeatingTask(
 			new ClosureTask(function () use ($player, $bet, $playerName) : void {
 				if (!$player->isOnline()) {
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
-					unset($this->playerCountdowns[$playerName]); // Clean up state
+					$this->cleanupPlayerTask($playerName);
 					return;
 				}
 
 				if (!isset($this->playerCountdowns[$playerName])) {
-					Main::getInstance()->getLogger()->error("Error: Player {$playerName} reveal countdown data missing in task, cancelling task. This shouldn't happen if player is online and previous unsets were managed correctly.");
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
+					Main::getInstance()->getLogger()->error("Error: Player {$playerName} reveal countdown data missing");
+					$this->cleanupPlayerTask($playerName);
 					return;
 				}
 
@@ -458,19 +416,14 @@ class PlaySubCommand extends BaseSubCommand {
 						4 => '§7The gods are deciding...',
 						3 => '§e§lAlmost there...',
 						2 => '§6§lLast chance to hope...',
-						1 => '§c§lHERE WE GO!'
+						1 => '§c§lHERE WE GO!',
+						default => '§7Processing...'
 					};
 
 					$intensity = 6 - $countdown;
 					$dots = str_repeat('§6●', $intensity) . str_repeat('§8○', 5 - $intensity);
 
-					$player->sendTitle(
-						'§6§l' . $countdown,
-						$suspenseMessage . "\n" . $dots,
-						0,
-						20,
-						5
-					);
+					$player->sendTitle('§6§l' . $countdown, $suspenseMessage . "\n" . $dots, 0, 20, 5);
 
 					if ($countdown <= 2) {
 						$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(5));
@@ -481,13 +434,7 @@ class PlaySubCommand extends BaseSubCommand {
 					--$this->playerCountdowns[$playerName];
 				} else {
 					$player->sendTitle('§a§l✦ REVEALED! ✦', '§fTime to see your fortune!', 0, 40, 20);
-
-					if (isset($this->playerCountdownTaskHandlers[$playerName])) {
-						$this->playerCountdownTaskHandlers[$playerName]->cancel();
-						unset($this->playerCountdownTaskHandlers[$playerName]);
-					}
-
-					unset($this->playerCountdowns[$playerName]);
+					$this->cleanupPlayerTask($playerName);
 
 					Main::getInstance()->getScheduler()->scheduleDelayedTask(
 						new ClosureTask(fn () => $this->revealPrize($player, $bet)),
@@ -514,7 +461,7 @@ class PlaySubCommand extends BaseSubCommand {
 			}
 		}
 
-		/** @var array<float|int> $multipliers */
+		/** @var array<int, float> $multipliers */
 		$multipliers = [];
 		$chosenPlayerItems = $this->chosen[$player->getName()] ?? [];
 
@@ -533,21 +480,35 @@ class PlaySubCommand extends BaseSubCommand {
 
 		$calculationMethod = Main::getInstance()->getLotteryCalculationMethod();
 		[$totalMultiplier, $calculationMessage] = self::calculateLotteryMultiplier($multipliers, $calculationMethod);
-		$count = count($multipliers);
 
 		$prize = $bet * $totalMultiplier;
 
-		// Handle prize calculation
+		$this->processPrizeTransaction($player, $prize, $economyProvider, $mainInstance);
+
+		$menu->getInventory()->setContents($contents);
+		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $multipliers, $totalMultiplier, $calculationMessage) : void {
+			$this->handleRevealClick($transaction, $menu, $bet, $prize, $multipliers, $totalMultiplier, $calculationMessage);
+		}));
+
+		$menu->setInventoryCloseListener(function (Player $player) use ($bet, $prize, $calculationMessage, $totalMultiplier, $mainInstance) : void {
+			$this->handleGameCompletion($player, $bet, $prize, $calculationMessage, $totalMultiplier, $mainInstance);
+		});
+
+		$menu->send($player);
+	}
+
+	private function processPrizeTransaction(Player $player, float $prize, \hazardteam\lottery\libs\_16d35adbbb7804c1\DaPigGuy\libPiggyEconomy\providers\EconomyProvider $economyProvider, Main $mainInstance) : void {
 		if ($prize < 0) {
 			$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player, $prize, $mainInstance) : void {
-				if ($amount < abs($prize)) {
+				$absPrize = abs($prize);
+				if ($amount < $absPrize) {
 					$economyProvider->setMoney($player, 0.0, function (bool $success) use ($player, $mainInstance) : void {
 						if (!$success) {
 							$player->sendMessage($mainInstance->getMessage('transaction-failed'));
 						}
 					});
 				} else {
-					$economyProvider->takeMoney($player, abs($prize), function (bool $success) use ($player, $mainInstance) : void {
+					$economyProvider->takeMoney($player, $absPrize, function (bool $success) use ($player, $mainInstance) : void {
 						if (!$success) {
 							$player->sendMessage($mainInstance->getMessage('transaction-failed'));
 						}
@@ -561,67 +522,65 @@ class PlaySubCommand extends BaseSubCommand {
 				}
 			});
 		}
-
-		$menu->getInventory()->setContents($contents);
-		$menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($menu, $bet, $prize, $multipliers, $totalMultiplier, $count, $calculationMessage) : void {
-			$player = $transaction->getPlayer();
-			$playerName = $player->getName();
-			$slot = $transaction->getAction()->getSlot();
-			$sourceItem = $transaction->getAction()->getSourceItem();
-
-			if (isset($multipliers[$slot]) && $slot >= 10 && $slot <= ($count + 9) && !$sourceItem->equals(VanillaItems::PAPER())) {
-				$multiplier = $multipliers[$slot];
-
-				if (isset($this->chosen[$playerName])) {
-					foreach ($this->chosen[$playerName] as $key => $item) {
-						if ($key + 10 === $slot) {
-							unset($this->chosen[$playerName][$key]);
-							$this->chosen[$playerName] = array_values($this->chosen[$playerName]);
-							break;
-						}
-					}
-				}
-
-				// Enhanced reveal effect
-				$revealedMultiplier = VanillaItems::PAPER()
-					->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
-					->setCustomName(self::highlightTextColor($multiplier) . '§l' . (string) $multiplier . 'x MULTIPLIER')
-					->setLore([
-						'§7This block contained:',
-						self::highlightTextColor($multiplier) . '§l' . (string) $multiplier . 'x',
-						'§8' . str_repeat('▫', 20),
-					]);
-
-				$menu->getInventory()->setItem($slot, $revealedMultiplier);
-
-				// Enhanced reveal sound
-				if ($multiplier > 1) {
-					$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(15));
-				} else {
-					$player->getWorld()->addSound($player->getPosition(), new XpCollectSound());
-				}
-
-				// Show final results when all revealed
-				if (count($this->chosen[$playerName] ?? []) === 0) {
-					unset($this->chosen[$playerName]);
-					self::showFinalResults($menu, $player, $prize, $bet, $totalMultiplier, $calculationMessage);
-				}
-			}
-		}));
-
-		$menu->setInventoryCloseListener(function (Player $player) use ($bet, $prize, $calculationMessage, $totalMultiplier, $mainInstance) : void {
-			$this->handleGameCompletion($player, $bet, $prize, $calculationMessage, $totalMultiplier, $mainInstance);
-		});
-
-		$menu->send($player);
 	}
 
 	/**
-	 * Show the final results with enhanced visual effects.
+	 * @param array<int, float> $multipliers
 	 */
-	private static function showFinalResults(InvMenu $menu, Player $player, float|int $prize, int $bet, float $totalMultiplier, string $calculationMessage) : void {
+	private function handleRevealClick(DeterministicInvMenuTransaction $transaction, InvMenu $menu, int $bet, float $prize, array $multipliers, float $totalMultiplier, string $calculationMessage) : void {
+		$player = $transaction->getPlayer();
+		$playerName = $player->getName();
+		$slot = $transaction->getAction()->getSlot();
+		$sourceItem = $transaction->getAction()->getSourceItem();
+
+		if (!isset($multipliers[$slot]) || $slot < 10 || $sourceItem->equals(VanillaItems::PAPER())) {
+			return;
+		}
+
+		$multiplier = $multipliers[$slot];
+
+		if (isset($this->chosen[$playerName])) {
+			foreach ($this->chosen[$playerName] as $key => $item) {
+				if ($key + 10 === $slot) {
+					unset($this->chosen[$playerName][$key]);
+					$this->chosen[$playerName] = array_values($this->chosen[$playerName]);
+					break;
+				}
+			}
+		}
+
+		$revealedMultiplier = VanillaItems::PAPER()
+			->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
+			->setCustomName(self::highlightTextColor($multiplier) . '§l' . (string) $multiplier . 'x MULTIPLIER')
+			->setLore([
+				'§7This block contained:',
+				self::highlightTextColor($multiplier) . '§l' . (string) $multiplier . 'x',
+				'§8' . str_repeat('▫', 20),
+			]);
+
+		$menu->getInventory()->setItem($slot, $revealedMultiplier);
+
+		if ($multiplier > 1) {
+			$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(15));
+		} else {
+			$player->getWorld()->addSound($player->getPosition(), new XpCollectSound());
+		}
+
+		if (count($this->chosen[$playerName] ?? []) === 0) {
+			unset($this->chosen[$playerName]);
+			self::showFinalResults($menu, $player, $prize, $bet, $totalMultiplier, $calculationMessage);
+		}
+	}
+
+	private static function showFinalResults(InvMenu $menu, Player $player, float $prize, int $bet, float $totalMultiplier, string $calculationMessage) : void {
 		$profit = $prize - $bet;
 		$resultColor = self::highlightTextColor($prize, $bet);
+
+		$statusText = match (true) {
+			$profit > 0 => '§a§l🎉 CONGRATULATIONS! 🎉',
+			$profit === 0.0 => '§e§l⚖ BREAK EVEN ⚖',
+			default => '§c§l💔 BETTER LUCK NEXT TIME 💔'
+		};
 
 		$finalResultItem = VanillaItems::PAPER()
 			->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))
@@ -631,16 +590,15 @@ class PlaySubCommand extends BaseSubCommand {
 				'§f' . $calculationMessage . ' = ' . self::highlightTextColor($totalMultiplier) . '§l' . (string) $totalMultiplier . 'x',
 				'§7Bet: §e' . $bet . ' §7→ Prize: ' . $resultColor . (string) $prize,
 				'§8' . str_repeat('═', 25),
-				$profit > 0 ? '§a§l🎉 CONGRATULATIONS! 🎉' : ($profit === 0 ? '§e§l⚖ BREAK EVEN ⚖' : '§c§l💔 BETTER LUCK NEXT TIME 💔'),
+				$statusText,
 			]);
 
 		$menu->getInventory()->setItem(16, $finalResultItem);
 
-		// Dramatic final sound effect
 		if ($profit > 0) {
 			$player->getWorld()->addSound($player->getPosition(), new XpLevelUpSound(30));
 			$player->sendTitle('§a§l🎊 WINNER! 🎊', '§6You won ' . abs($profit) . ' coins!', 0, 60, 30);
-		} elseif ($profit === 0) {
+		} elseif ($profit === 0.0) {
 			$player->getWorld()->addSound($player->getPosition(), new XpCollectSound());
 			$player->sendTitle('§e§l⚖ BREAK EVEN ⚖', '§7No gain, no loss!', 0, 60, 30);
 		} else {
@@ -649,17 +607,14 @@ class PlaySubCommand extends BaseSubCommand {
 		}
 	}
 
-	/**
-	 * Handle game completion with cleanup.
-	 */
-	private function handleGameCompletion(Player $player, int $bet, float|int $prize, string $calculationMessage, float $totalMultiplier, Main $mainInstance) : void {
+	private function handleGameCompletion(Player $player, int $bet, float $prize, string $calculationMessage, float $totalMultiplier, Main $mainInstance) : void {
 		$total = $prize - $bet;
-		$status = $prize < $bet ? 'Loss' : 'Win';
-		if ($prize === $bet) {
-			$status = 'Break-even';
-		}
+		$status = match (true) {
+			$prize < $bet => 'Loss',
+			$prize === (float) $bet => 'Break-even',
+			default => 'Win'
+		};
 
-		// Cleanup player data
 		unset($this->chosen[$player->getName()], $this->selectionProgress[$player->getName()]);
 
 		$broadcastMessage = str_replace(
@@ -669,59 +624,50 @@ class PlaySubCommand extends BaseSubCommand {
 		);
 		$player->getServer()->broadcastMessage($broadcastMessage);
 
-		if ($prize > $bet) {
-			$player->sendMessage(str_replace('{prize}', (string) $total, $mainInstance->getMessage('receive-prize')));
-		} elseif ($prize === $bet) {
-			$player->sendMessage(str_replace('{prize}', (string) $total, $mainInstance->getMessage('break-even-prize')));
-		} else {
-			$player->sendMessage(str_replace('{prize}', (string) $total, $mainInstance->getMessage('loss-prize')));
-		}
+		$messageKey = match (true) {
+			$prize > $bet => 'receive-prize',
+			$prize === (float) $bet => 'break-even-prize',
+			default => 'loss-prize'
+		};
+
+		$player->sendMessage(str_replace('{prize}', (string) $total, $mainInstance->getMessage($messageKey)));
 	}
 
-	private static function highlightTextColor(float|int $value, int $goldCondition = 1) : string {
-		return $value >= $goldCondition ? TextFormat::GREEN : ($value > 0 ? TextFormat::GOLD : TextFormat::RED);
+	private static function highlightTextColor(float $value, float $goldCondition = 1.0) : string {
+		return match (true) {
+			$value >= $goldCondition => TextFormat::GREEN,
+			$value > 0 => TextFormat::GOLD,
+			default => TextFormat::RED
+		};
 	}
 
 	/**
-	 * Calculate the lottery multiplier based on the given option.
+	 * @param array<int, float> $multipliers
 	 *
-	 * @param array<float|int> $multipliers The array of multipliers
-	 * @param string           $option      The calculation option ('max', 'min', 'average', 'product')
-	 *
-	 * @return array{0: float, 1: string}
-	 *
-	 * @throws InvalidArgumentException
+	 * @return array{float, string}
 	 */
 	private static function calculateLotteryMultiplier(array $multipliers, string $option) : array {
 		if (count($multipliers) === 0) {
 			return [0.0, 'No multipliers selected'];
 		}
 
-		$totalMultiplier = 0.0;
-		$calculationMessage = '';
+		$totalMultiplier = match ($option) {
+			'max' => max($multipliers),
+			'min' => min($multipliers),
+			'average' => array_sum($multipliers) / count($multipliers),
+			'product' => array_reduce($multipliers, fn (float $last, float $current) : float => $last * $current, 1.0),
+			default => throw new InvalidArgumentException('Invalid option: ' . $option)
+		};
 
-		switch ($option) {
-			case 'max':
-				$totalMultiplier = (float) max($multipliers);
-				$calculationMessage = 'Maximum';
-				break;
-			case 'min':
-				$totalMultiplier = (float) min($multipliers);
-				$calculationMessage = 'Minimum';
-				break;
-			case 'average':
-				$totalMultiplier = array_sum($multipliers) / count($multipliers);
-				$calculationMessage = 'Average';
-				break;
-			case 'product':
-				$totalMultiplier = (float) array_reduce($multipliers, fn (float|int $last, float|int $current) : float|int => $last * $current, 1.0);
-				$calculationMessage = 'Cumulative Multiplication';
-				break;
-			default:
-				throw new InvalidArgumentException('Invalid option: ' . $option);
-		}
+		$calculationLabel = match ($option) {
+			'max' => 'Maximum',
+			'min' => 'Minimum',
+			'average' => 'Average',
+			'product' => 'Cumulative Multiplication',
+			default => 'Unknown'
+		};
 
-		return [$totalMultiplier, $calculationMessage . '(' . implode(', ', $multipliers) . ')'];
+		return [$totalMultiplier, $calculationLabel . '(' . implode(', ', $multipliers) . ')'];
 	}
 
 	protected function prepare() : void {
