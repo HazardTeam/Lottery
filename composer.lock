@@ -398,16 +398,16 @@
         },
         {
             "name": "pocketmine/bedrock-block-upgrade-schema",
-            "version": "5.1.0",
+            "version": "5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockBlockUpgradeSchema.git",
-                "reference": "2218512e4b91f5bfd09ef55f7a4c4b04e169e41a"
+                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockBlockUpgradeSchema/zipball/2218512e4b91f5bfd09ef55f7a4c4b04e169e41a",
-                "reference": "2218512e4b91f5bfd09ef55f7a4c4b04e169e41a",
+                "url": "https://api.github.com/repos/pmmp/BedrockBlockUpgradeSchema/zipball/5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
+                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
                 "shasum": ""
             },
             "type": "library",
@@ -418,22 +418,22 @@
             "description": "Schemas describing how to upgrade saved block data in older Minecraft: Bedrock Edition world saves",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockBlockUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockBlockUpgradeSchema/tree/5.1.0"
+                "source": "https://github.com/pmmp/BedrockBlockUpgradeSchema/tree/5.2.0"
             },
-            "time": "2025-02-11T17:41:44+00:00"
+            "time": "2025-10-02T13:22:10+00:00"
         },
         {
             "name": "pocketmine/bedrock-data",
-            "version": "6.0.0+bedrock-1.21.100",
+            "version": "6.1.0+bedrock-1.21.111",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "edc0d829175e5e1e57c87001acfd03526c63fd34"
+                "reference": "7484fe3c3d7949fd48cc520add4f7eeebc4ba4af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/edc0d829175e5e1e57c87001acfd03526c63fd34",
-                "reference": "edc0d829175e5e1e57c87001acfd03526c63fd34",
+                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/7484fe3c3d7949fd48cc520add4f7eeebc4ba4af",
+                "reference": "7484fe3c3d7949fd48cc520add4f7eeebc4ba4af",
                 "shasum": ""
             },
             "type": "library",
@@ -444,22 +444,22 @@
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/6.0.0+bedrock-1.21.100"
+                "source": "https://github.com/pmmp/BedrockData/tree/6.1.0+bedrock-1.21.111"
             },
-            "time": "2025-08-30T17:25:42+00:00"
+            "time": "2025-10-02T15:28:18+00:00"
         },
         {
             "name": "pocketmine/bedrock-item-upgrade-schema",
-            "version": "1.15.0",
+            "version": "1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockItemUpgradeSchema.git",
-                "reference": "09e0dbe9743f21a76b1fe04b2b4136785775f52b"
+                "reference": "8c48ceaa72d390e89c4dbff9542aa4dfa734057d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/09e0dbe9743f21a76b1fe04b2b4136785775f52b",
-                "reference": "09e0dbe9743f21a76b1fe04b2b4136785775f52b",
+                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/8c48ceaa72d390e89c4dbff9542aa4dfa734057d",
+                "reference": "8c48ceaa72d390e89c4dbff9542aa4dfa734057d",
                 "shasum": ""
             },
             "type": "library",
@@ -470,25 +470,26 @@
             "description": "JSON schemas for upgrading items found in older Minecraft: Bedrock world saves",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockItemUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.15.0"
+                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.16.0"
             },
-            "time": "2025-08-06T15:08:48+00:00"
+            "time": "2025-10-02T13:22:32+00:00"
         },
         {
             "name": "pocketmine/bedrock-protocol",
-            "version": "40.0.0+bedrock-1.21.100",
+            "version": "51.1.0+bedrock-1.21.111",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "5e95cab3a6e6c24920e0c25ca4aaf887ed4b70ca"
+                "reference": "e380be227766ea58a874eb7d93de76f21c8ec04b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/5e95cab3a6e6c24920e0c25ca4aaf887ed4b70ca",
-                "reference": "5e95cab3a6e6c24920e0c25ca4aaf887ed4b70ca",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/e380be227766ea58a874eb7d93de76f21c8ec04b",
+                "reference": "e380be227766ea58a874eb7d93de76f21c8ec04b",
                 "shasum": ""
             },
             "require": {
+                "ext-encoding": "~1.0.0",
                 "ext-json": "*",
                 "php": "^8.1",
                 "pocketmine/binaryutils": "^0.2.0",
@@ -516,9 +517,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/40.0.0+bedrock-1.21.100"
+                "source": "https://github.com/pmmp/BedrockProtocol/tree/51.1.0+bedrock-1.21.111"
             },
-            "time": "2025-08-06T15:13:45+00:00"
+            "time": "2025-10-03T14:12:27+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -691,16 +692,16 @@
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.25.1",
+            "version": "2.25.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "8e6514f5a9638e69cdc2219c775fc7d3bb4c9fdd"
+                "reference": "44727765ad43df5e2e24a54ae70a70607ec7d488"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/8e6514f5a9638e69cdc2219c775fc7d3bb4c9fdd",
-                "reference": "8e6514f5a9638e69cdc2219c775fc7d3bb4c9fdd",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/44727765ad43df5e2e24a54ae70a70607ec7d488",
+                "reference": "44727765ad43df5e2e24a54ae70a70607ec7d488",
                 "shasum": ""
             },
             "type": "library",
@@ -708,9 +709,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.25.1"
+                "source": "https://github.com/pmmp/Language/tree/2.25.2"
             },
-            "time": "2025-04-16T11:15:32+00:00"
+            "time": "2025-10-03T22:34:06+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -796,16 +797,16 @@
         },
         {
             "name": "pocketmine/nbt",
-            "version": "1.1.1",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/NBT.git",
-                "reference": "c3c7b0a7295daeaf7873d90fed5c5d10381d12e1"
+                "reference": "51b8d6a97065fb93e0b4f660b65164b6e1ed2fff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/NBT/zipball/c3c7b0a7295daeaf7873d90fed5c5d10381d12e1",
-                "reference": "c3c7b0a7295daeaf7873d90fed5c5d10381d12e1",
+                "url": "https://api.github.com/repos/pmmp/NBT/zipball/51b8d6a97065fb93e0b4f660b65164b6e1ed2fff",
+                "reference": "51b8d6a97065fb93e0b4f660b65164b6e1ed2fff",
                 "shasum": ""
             },
             "require": {
@@ -815,7 +816,8 @@
             },
             "require-dev": {
                 "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "2.1.0",
+                "phpstan/phpstan": "2.1.27",
+                "phpstan/phpstan-phpunit": "^2.0",
                 "phpstan/phpstan-strict-rules": "^2.0",
                 "phpunit/phpunit": "^9.5"
             },
@@ -832,22 +834,22 @@
             "description": "PHP library for working with Named Binary Tags",
             "support": {
                 "issues": "https://github.com/pmmp/NBT/issues",
-                "source": "https://github.com/pmmp/NBT/tree/1.1.1"
+                "source": "https://github.com/pmmp/NBT/tree/1.2.0"
             },
-            "time": "2025-03-09T01:46:03+00:00"
+            "time": "2025-09-19T18:09:30+00:00"
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "5.33.1",
+            "version": "5.35.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "a540de1e3cd2edbbebf5e7d71057f060dea9d54e"
+                "reference": "c537f21bf337e951f90753f5977383b6007f6a4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/a540de1e3cd2edbbebf5e7d71057f060dea9d54e",
-                "reference": "a540de1e3cd2edbbebf5e7d71057f060dea9d54e",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/c537f21bf337e951f90753f5977383b6007f6a4f",
+                "reference": "c537f21bf337e951f90753f5977383b6007f6a4f",
                 "shasum": ""
             },
             "require": {
@@ -858,6 +860,7 @@
                 "ext-ctype": "*",
                 "ext-curl": "*",
                 "ext-date": "*",
+                "ext-encoding": "~1.0.0",
                 "ext-gmp": "*",
                 "ext-hash": "*",
                 "ext-igbinary": "^3.0.1",
@@ -879,10 +882,10 @@
                 "netresearch/jsonmapper": "~v5.0.0",
                 "php": "^8.1",
                 "php-64bit": "*",
-                "pocketmine/bedrock-block-upgrade-schema": "~5.1.0+bedrock-1.21.60",
-                "pocketmine/bedrock-data": "~6.0.0+bedrock-1.21.100",
-                "pocketmine/bedrock-item-upgrade-schema": "~1.15.0+bedrock-1.21.100",
-                "pocketmine/bedrock-protocol": "~40.0.0+bedrock-1.21.100",
+                "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
+                "pocketmine/bedrock-data": "~6.1.0+bedrock-1.21.111",
+                "pocketmine/bedrock-item-upgrade-schema": "~1.16.0+bedrock-1.21.110",
+                "pocketmine/bedrock-protocol": "~51.1.0+bedrock-1.21.111",
                 "pocketmine/binaryutils": "^0.2.1",
                 "pocketmine/callback-validator": "^1.0.2",
                 "pocketmine/color": "^0.3.0",
@@ -890,7 +893,7 @@
                 "pocketmine/locale-data": "~2.25.0",
                 "pocketmine/log": "^0.4.0",
                 "pocketmine/math": "~1.0.0",
-                "pocketmine/nbt": "~1.1.0",
+                "pocketmine/nbt": "~1.2.0",
                 "pocketmine/raklib": "~1.2.0",
                 "pocketmine/raklib-ipc": "~1.0.0",
                 "pocketmine/snooze": "^0.5.0",
@@ -902,7 +905,7 @@
                 "symfony/polyfill-mbstring": "*"
             },
             "require-dev": {
-                "phpstan/phpstan": "2.1.17",
+                "phpstan/phpstan": "2.1.25",
                 "phpstan/phpstan-phpunit": "^2.0.0",
                 "phpstan/phpstan-strict-rules": "^2.0.0",
                 "phpunit/phpunit": "^10.5.24"
@@ -924,7 +927,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.33.1"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.35.1"
             },
             "funding": [
                 {
@@ -936,7 +939,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-08-31T02:27:21+00:00"
+            "time": "2025-10-20T14:56:56+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -1649,40 +1652,40 @@
         },
         {
             "name": "ergebnis/php-cs-fixer-config",
-            "version": "6.54.0",
+            "version": "6.55.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/php-cs-fixer-config.git",
-                "reference": "f65d8bc65e79d4c695e85ec7ee93496d14cf7512"
+                "reference": "e43a11451c844ca2cbcb826c7d3e14553f914532"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/php-cs-fixer-config/zipball/f65d8bc65e79d4c695e85ec7ee93496d14cf7512",
-                "reference": "f65d8bc65e79d4c695e85ec7ee93496d14cf7512",
+                "url": "https://api.github.com/repos/ergebnis/php-cs-fixer-config/zipball/e43a11451c844ca2cbcb826c7d3e14553f914532",
+                "reference": "e43a11451c844ca2cbcb826c7d3e14553f914532",
                 "shasum": ""
             },
             "require": {
                 "erickskrauch/php-cs-fixer-custom-fixers": "~1.3.0",
                 "ext-filter": "*",
-                "friendsofphp/php-cs-fixer": "~3.87.1",
-                "kubawerlos/php-cs-fixer-custom-fixers": "~3.32.0",
+                "friendsofphp/php-cs-fixer": "~3.88.2",
+                "kubawerlos/php-cs-fixer-custom-fixers": "~3.35.1",
                 "php": "~7.4.0 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
             },
             "require-dev": {
-                "ergebnis/composer-normalize": "^2.48.1",
+                "ergebnis/composer-normalize": "^2.48.2",
                 "ergebnis/data-provider": "^3.6.0",
                 "ergebnis/license": "^2.7.0",
-                "ergebnis/phpstan-rules": "^2.11.0",
+                "ergebnis/phpstan-rules": "^2.12.0",
                 "ergebnis/phpunit-slow-test-detector": "^2.20.0",
                 "ergebnis/rector-rules": "^1.6.0",
                 "fakerphp/faker": "^1.24.1",
                 "phpstan/extension-installer": "^1.4.3",
-                "phpstan/phpstan": "^2.1.22",
+                "phpstan/phpstan": "^2.1.29",
                 "phpstan/phpstan-deprecation-rules": "^2.0.3",
                 "phpstan/phpstan-phpunit": "^2.0.7",
-                "phpstan/phpstan-strict-rules": "^2.0.6",
+                "phpstan/phpstan-strict-rules": "^2.0.7",
                 "phpunit/phpunit": "^9.6.22",
-                "rector/rector": "^2.1.4",
+                "rector/rector": "^2.1.7",
                 "symfony/filesystem": "^5.0.0 || ^6.0.0",
                 "symfony/process": "^5.0.0 || ^6.0.0"
             },
@@ -1716,7 +1719,7 @@
                 "security": "https://github.com/ergebnis/php-cs-fixer-config/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/php-cs-fixer-config"
             },
-            "time": "2025-09-03T07:33:14+00:00"
+            "time": "2025-10-01T13:54:12+00:00"
         },
         {
             "name": "erickskrauch/php-cs-fixer-custom-fixers",
@@ -1895,16 +1898,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.87.2",
+            "version": "v3.88.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992"
+                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992",
-                "reference": "da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/a8d15584bafb0f0d9d938827840060fd4a3ebc99",
+                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99",
                 "shasum": ""
             },
             "require": {
@@ -1931,12 +1934,13 @@
                 "symfony/polyfill-mbstring": "^1.33",
                 "symfony/polyfill-php80": "^1.33",
                 "symfony/polyfill-php81": "^1.33",
+                "symfony/polyfill-php84": "^1.33",
                 "symfony/process": "^5.4.47 || ^6.4.24 || ^7.2",
                 "symfony/stopwatch": "^5.4.45 || ^6.4.24 || ^7.0"
             },
             "require-dev": {
                 "facile-it/paraunit": "^1.3.1 || ^2.7",
-                "infection/infection": "^0.29.14",
+                "infection/infection": "^0.31.0",
                 "justinrainbow/json-schema": "^6.5",
                 "keradus/cli-executor": "^2.2",
                 "mikey179/vfsstream": "^1.6.12",
@@ -1944,7 +1948,6 @@
                 "php-cs-fixer/phpunit-constraint-isidenticalstring": "^1.6",
                 "php-cs-fixer/phpunit-constraint-xmlmatchesxsd": "^1.6",
                 "phpunit/phpunit": "^9.6.25 || ^10.5.53 || ^11.5.34",
-                "symfony/polyfill-php84": "^1.33",
                 "symfony/var-dumper": "^5.4.48 || ^6.4.24 || ^7.3.2",
                 "symfony/yaml": "^5.4.45 || ^6.4.24 || ^7.3.2"
             },
@@ -1987,7 +1990,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.87.2"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.88.2"
             },
             "funding": [
                 {
@@ -1995,30 +1998,30 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-10T09:51:40+00:00"
+            "time": "2025-09-27T00:24:15+00:00"
         },
         {
             "name": "kubawerlos/php-cs-fixer-custom-fixers",
-            "version": "v3.32.0",
+            "version": "v3.35.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers.git",
-                "reference": "c3a815a496f5cd6356726902f421013cbb7ba3f3"
+                "reference": "2a35f80ae24ca77443a7af1599c3a3db1b6bd395"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/c3a815a496f5cd6356726902f421013cbb7ba3f3",
-                "reference": "c3a815a496f5cd6356726902f421013cbb7ba3f3",
+                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/2a35f80ae24ca77443a7af1599c3a3db1b6bd395",
+                "reference": "2a35f80ae24ca77443a7af1599c3a3db1b6bd395",
                 "shasum": ""
             },
             "require": {
                 "ext-filter": "*",
                 "ext-tokenizer": "*",
-                "friendsofphp/php-cs-fixer": "^3.85",
+                "friendsofphp/php-cs-fixer": "^3.87",
                 "php": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.6.22 || 10.5.45 || ^11.5.7"
+                "phpunit/phpunit": "^9.6.24 || ^10.5.51 || ^11.5.32"
             },
             "type": "library",
             "autoload": {
@@ -2039,7 +2042,7 @@
             "description": "A set of custom fixers for PHP CS Fixer",
             "support": {
                 "issues": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/issues",
-                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.32.0"
+                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.35.1"
             },
             "funding": [
                 {
@@ -2047,7 +2050,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-01T06:10:10+00:00"
+            "time": "2025-09-28T18:43:35+00:00"
         },
         {
             "name": "phpstan/extension-installer",
@@ -2099,16 +2102,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.28",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "fcf8b71aeab4e1a1131d1783cef97b23a51b87a9"
-            },
+            "version": "1.12.32",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/fcf8b71aeab4e1a1131d1783cef97b23a51b87a9",
-                "reference": "fcf8b71aeab4e1a1131d1783cef97b23a51b87a9",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/2770dcdf5078d0b0d53f94317e06affe88419aa8",
+                "reference": "2770dcdf5078d0b0d53f94317e06affe88419aa8",
                 "shasum": ""
             },
             "require": {
@@ -2153,7 +2151,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-17T17:15:39+00:00"
+            "time": "2025-09-30T10:16:31+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
@@ -2952,16 +2950,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v7.3.3",
+            "version": "v7.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "cb0102a1c5ac3807cf3fdf8bea96007df7fdbea7"
+                "reference": "2b9c5fafbac0399a20a2e82429e2bd735dcfb7db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/cb0102a1c5ac3807cf3fdf8bea96007df7fdbea7",
-                "reference": "cb0102a1c5ac3807cf3fdf8bea96007df7fdbea7",
+                "url": "https://api.github.com/repos/symfony/console/zipball/2b9c5fafbac0399a20a2e82429e2bd735dcfb7db",
+                "reference": "2b9c5fafbac0399a20a2e82429e2bd735dcfb7db",
                 "shasum": ""
             },
             "require": {
@@ -3026,7 +3024,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v7.3.3"
+                "source": "https://github.com/symfony/console/tree/v7.3.4"
             },
             "funding": [
                 {
@@ -3046,7 +3044,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-25T06:35:40+00:00"
+            "time": "2025-09-22T15:31:00+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -3746,17 +3744,97 @@
             "time": "2024-09-09T11:45:10+00:00"
         },
         {
-            "name": "symfony/process",
-            "version": "v7.3.3",
+            "name": "symfony/polyfill-php84",
+            "version": "v1.33.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/process.git",
-                "reference": "32241012d521e2e8a9d713adb0812bb773b907f1"
+                "url": "https://github.com/symfony/polyfill-php84.git",
+                "reference": "d8ced4d875142b6a7426000426b8abc631d6b191"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/32241012d521e2e8a9d713adb0812bb773b907f1",
-                "reference": "32241012d521e2e8a9d713adb0812bb773b907f1",
+                "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/d8ced4d875142b6a7426000426b8abc631d6b191",
+                "reference": "d8ced4d875142b6a7426000426b8abc631d6b191",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php84\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.4+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php84/tree/v1.33.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2025-06-24T13:30:11+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v7.3.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "f24f8f316367b30810810d4eb30c543d7003ff3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/f24f8f316367b30810810d4eb30c543d7003ff3b",
+                "reference": "f24f8f316367b30810810d4eb30c543d7003ff3b",
                 "shasum": ""
             },
             "require": {
@@ -3788,7 +3866,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v7.3.3"
+                "source": "https://github.com/symfony/process/tree/v7.3.4"
             },
             "funding": [
                 {
@@ -3808,7 +3886,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-18T09:42:54+00:00"
+            "time": "2025-09-11T10:12:26+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -3957,16 +4035,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v7.3.3",
+            "version": "v7.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "17a426cce5fd1f0901fefa9b2a490d0038fd3c9c"
+                "reference": "f96476035142921000338bad71e5247fbc138872"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/17a426cce5fd1f0901fefa9b2a490d0038fd3c9c",
-                "reference": "17a426cce5fd1f0901fefa9b2a490d0038fd3c9c",
+                "url": "https://api.github.com/repos/symfony/string/zipball/f96476035142921000338bad71e5247fbc138872",
+                "reference": "f96476035142921000338bad71e5247fbc138872",
                 "shasum": ""
             },
             "require": {
@@ -3981,7 +4059,6 @@
             },
             "require-dev": {
                 "symfony/emoji": "^7.1",
-                "symfony/error-handler": "^6.4|^7.0",
                 "symfony/http-client": "^6.4|^7.0",
                 "symfony/intl": "^6.4|^7.0",
                 "symfony/translation-contracts": "^2.5|^3.0",
@@ -4024,7 +4101,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v7.3.3"
+                "source": "https://github.com/symfony/string/tree/v7.3.4"
             },
             "funding": [
                 {
@@ -4044,7 +4121,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-25T06:35:40+00:00"
+            "time": "2025-09-11T14:36:48+00:00"
         }
     ],
     "aliases": [],
