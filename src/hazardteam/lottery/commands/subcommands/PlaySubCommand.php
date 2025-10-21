@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_0bbd8c269bf17ae0\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_0bbd8c269bf17ae0\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_ab6a685ecbde31ce\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_ab6a685ecbde31ce\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_0bbd8c269bf17ae0\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_0bbd8c269bf17ae0\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_0bbd8c269bf17ae0\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_ab6a685ecbde31ce\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_ab6a685ecbde31ce\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_ab6a685ecbde31ce\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -497,7 +497,7 @@ final class PlaySubCommand extends BaseSubCommand {
 		$menu->send($player);
 	}
 
-	private function processPrizeTransaction(Player $player, float $prize, \hazardteam\lottery\libs\_0bbd8c269bf17ae0\DaPigGuy\libPiggyEconomy\providers\EconomyProvider $economyProvider, Main $mainInstance) : void {
+	private function processPrizeTransaction(Player $player, float $prize, \hazardteam\lottery\libs\_ab6a685ecbde31ce\DaPigGuy\libPiggyEconomy\providers\EconomyProvider $economyProvider, Main $mainInstance) : void {
 		if ($prize < 0) {
 			$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player, $prize, $mainInstance) : void {
 				$absPrize = abs($prize);
