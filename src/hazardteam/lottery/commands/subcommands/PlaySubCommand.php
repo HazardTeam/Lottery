@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace hazardteam\lottery\commands\subcommands;
 
-use hazardteam\lottery\libs\_16d35adbbb7804c1\CortexPE\Commando\BaseSubCommand;
-use hazardteam\lottery\libs\_16d35adbbb7804c1\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use hazardteam\lottery\libs\_0bbd8c269bf17ae0\CortexPE\Commando\BaseSubCommand;
+use hazardteam\lottery\libs\_0bbd8c269bf17ae0\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use hazardteam\lottery\Main;
 use InvalidArgumentException;
-use hazardteam\lottery\libs\_16d35adbbb7804c1\jojoe77777\FormAPI\CustomForm;
-use hazardteam\lottery\libs\_16d35adbbb7804c1\muqsit\invmenu\InvMenu;
-use hazardteam\lottery\libs\_16d35adbbb7804c1\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use hazardteam\lottery\libs\_0bbd8c269bf17ae0\jojoe77777\FormAPI\CustomForm;
+use hazardteam\lottery\libs\_0bbd8c269bf17ae0\muqsit\invmenu\InvMenu;
+use hazardteam\lottery\libs\_0bbd8c269bf17ae0\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -70,7 +70,7 @@ final class PlaySubCommand extends BaseSubCommand {
 	/** @var array<string, int> */
 	private array $selectionProgress = [];
 
-	/** @var array<string, TaskHandler> */
+	/** @var array<string, TaskHandler<ClosureTask>> */
 	private array $playerCountdownTaskHandlers = [];
 
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
@@ -497,7 +497,7 @@ final class PlaySubCommand extends BaseSubCommand {
 		$menu->send($player);
 	}
 
-	private function processPrizeTransaction(Player $player, float $prize, \hazardteam\lottery\libs\_16d35adbbb7804c1\DaPigGuy\libPiggyEconomy\providers\EconomyProvider $economyProvider, Main $mainInstance) : void {
+	private function processPrizeTransaction(Player $player, float $prize, \hazardteam\lottery\libs\_0bbd8c269bf17ae0\DaPigGuy\libPiggyEconomy\providers\EconomyProvider $economyProvider, Main $mainInstance) : void {
 		if ($prize < 0) {
 			$economyProvider->getMoney($player, function (float|int $amount) use ($economyProvider, $player, $prize, $mainInstance) : void {
 				$absPrize = abs($prize);
