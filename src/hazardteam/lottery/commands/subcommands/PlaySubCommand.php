@@ -70,7 +70,7 @@ final class PlaySubCommand extends BaseSubCommand {
 	/** @var array<string, int> */
 	private array $selectionProgress = [];
 
-	/** @var array<string, TaskHandler> */
+	/** @var array<string, TaskHandler<ClosureTask>> */
 	private array $playerCountdownTaskHandlers = [];
 
 	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
