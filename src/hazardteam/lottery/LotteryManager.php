@@ -19,11 +19,11 @@ use function mt_rand;
 use function shuffle;
 
 class LotteryManager {
-	/**
-	 * Summary of ranges.
-	 *
-	 * @var array<LotteryRange>
-	 */
+	private const MIN_TABLE_SIZE = 28;
+	private const MIN_SHUFFLE_COUNT = 5;
+	private const MAX_SHUFFLE_COUNT = 10;
+
+	/** @var array<int, LotteryRange> */
 	private array $ranges = [];
 
 	/**
@@ -36,6 +36,10 @@ class LotteryManager {
 	}
 
 	/**
+	 * Generate lottery tables with proper shuffling.
+	 *
+	 * @param array<float> $tables
+	 *
 	 * @return array<float>
 	 */
 	public function getTables(array $tables = []) : array {
@@ -43,12 +47,12 @@ class LotteryManager {
 			$tables = array_merge($tables, $range->getTable());
 		}
 
-		for ($i = 0; $i < mt_rand(5, 10); ++$i) {
+		for ($i = 0; $i < mt_rand(self::MIN_SHUFFLE_COUNT, self::MAX_SHUFFLE_COUNT); ++$i) {
 			shuffle($tables);
 		}
 
-		if (count($tables) < 28) {
-			$tables = $this->getTables($tables);
+		if (count($tables) < self::MIN_TABLE_SIZE) {
+			return $this->getTables($tables);
 		}
 
 		return $tables;
