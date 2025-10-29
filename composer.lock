@@ -424,16 +424,16 @@
         },
         {
             "name": "pocketmine/bedrock-data",
-            "version": "6.1.0+bedrock-1.21.111",
+            "version": "6.2.0+bedrock-1.21.120",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "7484fe3c3d7949fd48cc520add4f7eeebc4ba4af"
+                "reference": "f186e363ac8abbc3242481cad59ae620549dc709"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/7484fe3c3d7949fd48cc520add4f7eeebc4ba4af",
-                "reference": "7484fe3c3d7949fd48cc520add4f7eeebc4ba4af",
+                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/f186e363ac8abbc3242481cad59ae620549dc709",
+                "reference": "f186e363ac8abbc3242481cad59ae620549dc709",
                 "shasum": ""
             },
             "type": "library",
@@ -444,9 +444,9 @@
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/6.1.0+bedrock-1.21.111"
+                "source": "https://github.com/pmmp/BedrockData/tree/bedrock-1.21.120"
             },
-            "time": "2025-10-02T15:28:18+00:00"
+            "time": "2025-10-28T22:15:22+00:00"
         },
         {
             "name": "pocketmine/bedrock-item-upgrade-schema",
@@ -476,16 +476,16 @@
         },
         {
             "name": "pocketmine/bedrock-protocol",
-            "version": "52.0.0+bedrock-1.21.111",
+            "version": "53.0.0+bedrock-1.21.120",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "d464862a0112f3538b70f98c807a2fbf9f1ae275"
+                "reference": "3ff02cdee172a163cde11826da583113560f2962"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/d464862a0112f3538b70f98c807a2fbf9f1ae275",
-                "reference": "d464862a0112f3538b70f98c807a2fbf9f1ae275",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/3ff02cdee172a163cde11826da583113560f2962",
+                "reference": "3ff02cdee172a163cde11826da583113560f2962",
                 "shasum": ""
             },
             "require": {
@@ -517,9 +517,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/52.0.0+bedrock-1.21.111"
+                "source": "https://github.com/pmmp/BedrockProtocol/tree/53.0.0+bedrock-1.21.120"
             },
-            "time": "2025-10-20T21:26:45+00:00"
+            "time": "2025-10-28T22:16:00+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -817,16 +817,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "5.36.0",
+            "version": "5.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "85dfee4262256a817439662daee501117e559341"
+                "reference": "153080e2ef75999f14b46478144241a50e520c17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/85dfee4262256a817439662daee501117e559341",
-                "reference": "85dfee4262256a817439662daee501117e559341",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/153080e2ef75999f14b46478144241a50e520c17",
+                "reference": "153080e2ef75999f14b46478144241a50e520c17",
                 "shasum": ""
             },
             "require": {
@@ -860,9 +860,9 @@
                 "php": "^8.1",
                 "php-64bit": "*",
                 "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
-                "pocketmine/bedrock-data": "~6.1.0+bedrock-1.21.111",
+                "pocketmine/bedrock-data": "~6.2.0+bedrock-1.21.120",
                 "pocketmine/bedrock-item-upgrade-schema": "~1.16.0+bedrock-1.21.110",
-                "pocketmine/bedrock-protocol": "~52.0.0+bedrock-1.21.111",
+                "pocketmine/bedrock-protocol": "~53.0.0+bedrock-1.21.120",
                 "pocketmine/binaryutils": "^0.2.1",
                 "pocketmine/callback-validator": "^1.0.2",
                 "pocketmine/color": "^0.3.0",
@@ -903,7 +903,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.36.0"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.37.0"
             },
             "funding": [
                 {
@@ -915,7 +915,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-10-22T13:27:25+00:00"
+            "time": "2025-10-28T22:34:28+00:00"
         },
         {
             "name": "pocketmine/raklib",
